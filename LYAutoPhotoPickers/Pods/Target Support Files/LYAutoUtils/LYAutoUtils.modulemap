@@ -1,0 +1,6 @@
+framework module LYAutoUtils {
+  umbrella header "LYAutoUtils-umbrella.h"
+
+  export *
+  module * { export * }
+}
