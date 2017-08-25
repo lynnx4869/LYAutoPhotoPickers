@@ -46,6 +46,18 @@ public extension PHAsset {
         return getAssetImage(size: size)
     }
     
+    public func getAssetUrl() -> URL {
+        var urlString: String!
+        let options = PHImageRequestOptions()
+        options.isSynchronous = true
+        PHImageManager.default().requestImageData(for: self,
+                                                  options: options)
+        { (imageData, dataUTI, orientation, info) in
+            let oldUrl = info?["PHImageFileURLKey"] as! NSURL
+            urlString = oldUrl.absoluteString
+        }
+        let url = URL(string: urlString)
+        return url!
+    }
+    
 }
-
-

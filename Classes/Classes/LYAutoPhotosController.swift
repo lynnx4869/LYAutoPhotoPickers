@@ -10,13 +10,12 @@ import UIKit
 import Photos
 import LYAutoUtils
 import TOCropViewController
-import MWPhotoBrowser
+import SKPhotoBrowser
 
 class LYAutoPhotoAsset: NSObject {
     
     var asset: PHAsset!
     var tumImage: UIImage!
-//    var originImage: UIImage!
     
 }
 
@@ -53,7 +52,7 @@ class LYAutoPhotoFooterView: UICollectionReusableView {
     }
 }
 
-class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, TOCropViewControllerDelegate, MWPhotoBrowserDelegate, LYAutoPhotoTapDelegate {
+class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, TOCropViewControllerDelegate, LYAutoPhotoTapDelegate {
 
     public var maxSelects: Int!
     public var assetCollection: PHAssetCollection!
@@ -228,22 +227,27 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
     }
     
     internal func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let browser = MWPhotoBrowser(delegate: self)
         
-        browser?.displayActionButton = false
-        browser?.displayNavArrows = false
-        browser?.displaySelectionButtons = false
-        browser?.zoomPhotosToFill = true
-        browser?.alwaysShowControls = false
-        browser?.enableGrid = true
-        browser?.startOnGrid = false
-        browser?.autoPlayOnAppear = false
+        let cell = collectionView.cellForItem(at: indexPath) as! LYAutoPhotoSelectCell
+        let originImage = cell.tumImage.image
         
-        browser?.setCurrentPhotoIndex(UInt(indexPath.item))
-        browser?.showNextPhoto(animated: true)
-        browser?.showPreviousPhoto(animated: true)
+        let photoAsset = photos[indexPath.item]
+        let array: [SKPhoto] = [SKPhoto.photoWithImage(photoAsset.asset.getOriginAssetImage())]
         
-        navigationController?.pushViewController(browser!, animated: true)
+        SKPhotoBrowserOptions.displayToolbar = false
+        SKPhotoBrowserOptions.displayCounterLabel = false
+        SKPhotoBrowserOptions.displayBackAndForwardButton = false
+        SKPhotoBrowserOptions.displayAction = false
+        SKPhotoBrowserOptions.displayHorizontalScrollIndicator = false
+        SKPhotoBrowserOptions.displayVerticalScrollIndicator = false
+        SKPhotoBrowserOptions.displayStatusbar = false
+        SKPhotoBrowserOptions.displayDeleteButton = false
+        SKPhotoBrowserOptions.enableZoomBlackArea = true
+        SKPhotoBrowserOptions.enableSingleTapDismiss = true
+        SKPhotoBrowserOptions.bounceAnimation = true
+        
+        let browser = SKPhotoBrowser(originImage: originImage!, photos: array, animatedFromView: cell)
+        present(browser, animated: true, completion: nil)
     }
     
     internal func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
@@ -282,17 +286,6 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
         cropViewController.dismiss(animated: false) { 
             self.navigationController?.dismiss(animated: true, completion: nil)
         }
-    }
-    
-    //MARK: - MWPhotoBrowserDelegate
-    internal func numberOfPhotos(in photoBrowser: MWPhotoBrowser!) -> UInt {
-        return UInt(photos.count)
-    }
-    
-    internal func photoBrowser(_ photoBrowser: MWPhotoBrowser!, photoAt index: UInt) -> MWPhotoProtocol! {
-        let photoAsset = photos[Int(index)]
-        
-        return MWPhoto(image: photoAsset.asset.getOriginAssetImage())
     }
     
 }
