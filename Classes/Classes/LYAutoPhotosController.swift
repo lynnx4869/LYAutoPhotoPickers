@@ -163,11 +163,12 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
                                  subTitle: "最多只能选择\(String(maxSelects))张照片",
                                  check: false,
                                  viewController: self,
-                                 sure: { (title) in
+                                 confirm: nil,
+                                 cancel: nil,
+                                 sureAction: { (title) in
                                     
-                },
-                                 cancel: { (title) in
-                                    
+                }, cancelAction: { (title) in
+                    
                 })
                 
                 return

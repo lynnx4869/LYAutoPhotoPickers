@@ -14,24 +14,49 @@ public struct LYAutoAlert {
                      subTitle: String,
                      check: Bool,
                      viewController: UIViewController,
-                     sure: @escaping ((_ title: String)->Void),
-                     cancel: @escaping ((_ title: String)->Void)) {
+                     confirm: String?,
+                     cancel: String?,
+                     sureAction: @escaping ((_ title: String)->Void),
+                     cancelAction: @escaping ((_ title: String)->Void)) {
+        
+        var confirmTitle = ""
+        var cancelTitle = ""
+        
+        if check {
+            if confirm == nil {
+                confirmTitle = "确认"
+            } else {
+                confirmTitle = confirm!
+            }
+            
+            if cancel == nil {
+                cancelTitle = "取消"
+            } else {
+                cancelTitle = cancel!
+            }
+        } else {
+            if confirm == nil {
+                confirmTitle = "我知道了"
+            } else {
+                confirmTitle = confirm!
+            }
+        }
         
         let alertController = UIAlertController(title: title, message: subTitle, preferredStyle: .alert)
         
         if check {
-            let cancelAction = UIAlertAction(title: "取消", style: .cancel, handler: { (action) in
-                cancel("取消")
+            let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel, handler: { (action) in
+                cancelAction("取消")
             })
             alertController.addAction(cancelAction)
             
-            let sureAction = UIAlertAction(title: "确认", style: .default, handler: { (action) in
-                sure("确认")
+            let sureAction = UIAlertAction(title: confirmTitle, style: .default, handler: { (action) in
+                sureAction("确认")
             })
             alertController.addAction(sureAction)
         } else {
-            let cancelAction = UIAlertAction(title: "我知道了", style: .cancel, handler: { (action) in
-                sure("确认")
+            let cancelAction = UIAlertAction(title: confirmTitle, style: .cancel, handler: { (action) in
+                sureAction("确认")
             })
             alertController.addAction(cancelAction)
         }

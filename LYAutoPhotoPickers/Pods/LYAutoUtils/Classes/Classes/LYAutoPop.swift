@@ -28,9 +28,11 @@ public struct LYAutoPop {
         autoPopView.pop_add(addAnim, forKey: "fade")
         
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()+duration) { 
-            [unowned autoPopView] in
-            autoPopView.pop_removeAnimation(forKey: "fade")
-            autoPopView.removeFromSuperview()
+            [weak autoPopView] in
+            if autoPopView != nil {
+                autoPopView?.pop_removeAnimation(forKey: "fade")
+                autoPopView?.removeFromSuperview()
+            }
         }
     }
     
@@ -51,6 +53,9 @@ fileprivate class LYAutoPopView: UIView {
         addSubview(messageLabel)
         
         setType(message: message, type: type)
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(removeSelf))
+        addGestureRecognizer(tap)
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -67,6 +72,10 @@ fileprivate class LYAutoPopView: UIView {
             backgroundColor = UIColor.color(hex: 0xD9544F)
             leftIcon.image = UIImage(named: "ly_message_warning")
         }
+    }
+    
+    @objc fileprivate func removeSelf() {
+        removeFromSuperview()
     }
     
 }

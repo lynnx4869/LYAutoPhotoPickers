@@ -27,10 +27,12 @@ public class LYAutoSwitchs: UIView, UICollectionViewDelegate, UICollectionViewDa
     
     public var curIndex: Int = 0 {
         willSet {
-            let oldCell = collectionView.cellForItem(at: IndexPath(row: curIndex, section: 0)) as! LYAutoSwitchCell
+            let oldCell = collectionView.cellForItem(at: IndexPath(row: curIndex, section: 0)) as? LYAutoSwitchCell
             let newCell = collectionView.cellForItem(at: IndexPath(row: newValue, section: 0)) as! LYAutoSwitchCell
             
-            oldCell.isSelect = false
+            if oldCell != nil {
+                oldCell?.isSelect = false
+            }
             newCell.isSelect = true
             
             if titles.count > 3 {
