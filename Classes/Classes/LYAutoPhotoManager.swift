@@ -24,6 +24,8 @@ public struct LYAutoPhotoManager {
     public var block: (Bool, [UIImage]?)->Void = {_ in }
     public var qrBlock: ()->Void = {_ in }
     
+    public init() {}
+    
     public func showPhoto(in pvc: UIViewController) {
         checkPhotoAuth { (vc) in
             DispatchQueue.main.async {
