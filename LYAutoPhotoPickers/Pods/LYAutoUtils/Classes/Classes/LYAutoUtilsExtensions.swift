@@ -231,6 +231,14 @@ public extension String {
         }
     }
     
+    /// 文件是否存在
+    ///
+    /// - Returns: 是否
+    public func exists() -> Bool {
+        let fileManager = FileManager.default
+        return fileManager.fileExists(atPath: self)
+    }
+    
 }
 
 public extension WKWebView {

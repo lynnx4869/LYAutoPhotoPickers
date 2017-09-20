@@ -21,8 +21,8 @@ public struct LYAutoPhotoManager {
     public var isRateTailor: Bool = false
     public var tailoringRate: Double = 0.0
     public var maxSelects: Int = 1
-    public var block: (Bool, [UIImage]?)->Void = {_ in }
-    public var qrBlock: ()->Void = {_ in }
+    public var block: (Bool, [UIImage]?)->Void = {_,_  in }
+    public var qrBlock: ()->Void = { }
     
     public init() {}
     
@@ -36,10 +36,10 @@ public struct LYAutoPhotoManager {
     
     fileprivate func checkPhotoAuth(authBlock: @escaping ((_: UIViewController)->Void)) {
         if type == .camera || type == .qrcode {
-            let authStatus = AVCaptureDevice.authorizationStatus(forMediaType: AVMediaTypeVideo)
+            let authStatus = AVCaptureDevice.authorizationStatus(for: AVMediaType.video)
             
             if authStatus == .notDetermined {
-                AVCaptureDevice.requestAccess(forMediaType: AVMediaTypeVideo,
+                AVCaptureDevice.requestAccess(for: AVMediaType.video,
                                               completionHandler:
                     { (granted) in
                         if granted {

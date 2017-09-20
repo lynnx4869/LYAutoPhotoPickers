@@ -1,12 +1,12 @@
 PODS:
-  - LYAutoUtils (0.0.4):
+  - LYAutoUtils (0.0.6):
     - pop (~> 1.0)
     - SSZipArchive
   - pop (1.0.10)
-  - SKPhotoBrowser (4.1.0)
-  - SnapKit (3.2.0)
-  - SSZipArchive (2.0.4)
-  - TOCropViewController (2.0.12)
+  - SKPhotoBrowser (4.1.1)
+  - SnapKit (4.0.0)
+  - SSZipArchive (2.0.7)
+  - TOCropViewController (2.1.0)
 
 DEPENDENCIES:
   - LYAutoUtils
@@ -15,12 +15,12 @@ DEPENDENCIES:
   - TOCropViewController
 
 SPEC CHECKSUMS:
-  LYAutoUtils: ca0898455e1f2f89ee19cdb69c7a4675c3dd4af7
+  LYAutoUtils: 771b815bdb71853a1ce4bbf7b049f3fda11b0eb2
   pop: 82ca6b068ce9278fd350fd9dd09482a0ce9492e6
-  SKPhotoBrowser: 1fbfdc34979335f9ea0ace7dcc6b08c5e7326a8b
-  SnapKit: 1ca44df72cfa543218d177cb8aab029d10d86ea7
-  SSZipArchive: c77fc6ec8194f4e6d57876da1348e46cd63b90ba
-  TOCropViewController: e6e31b38d785a901e5651a1e7fff71bcda6c5214
+  SKPhotoBrowser: aa02de50f56d80fac23f543e40847af6b360e4b3
+  SnapKit: a42d492c16e80209130a3379f73596c3454b7694
+  SSZipArchive: 8c197761d66bd33e7f8b5b51ee57dff303971150
+  TOCropViewController: f88194a084f6afe1fd6f21a3f0edda7dd097e38b
 
 PODFILE CHECKSUM: 57e5615a1f640e3d68bb18aea595aea58e678fc0
 

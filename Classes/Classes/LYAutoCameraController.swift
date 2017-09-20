@@ -91,11 +91,11 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
     
     fileprivate func cameraInit() {
         device = cameraOfPosition(position: .back)
-        input = try? AVCaptureDeviceInput(device: device)
+        input = try? AVCaptureDeviceInput(device: device!)
         
-        session.sessionPreset = AVCaptureSessionPreset1920x1080
+        session.sessionPreset = AVCaptureSession.Preset.hd1920x1080
         
-        if session.canAddInput(input) {
+        if session.canAddInput(input!) {
             session.addInput(input!)
         }
         
@@ -104,7 +104,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         }
         
         previewLayer = AVCaptureVideoPreviewLayer(session: session)
-        previewLayer?.videoGravity = AVLayerVideoGravityResizeAspectFill
+        previewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
         previewLayer?.frame = CGRect(x: 0, y: 0, width: LyConsts.ScreenWidth, height: LyConsts.ScreenHeight)
         cameraView.layer.addSublayer(previewLayer!)
         
@@ -231,8 +231,8 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         
     }
     
-    fileprivate func cameraOfPosition(position: AVCaptureDevicePosition) -> AVCaptureDevice? {
-        let devices = AVCaptureDevice.devices(withMediaType: AVMediaTypeVideo) as! [AVCaptureDevice]
+    fileprivate func cameraOfPosition(position: AVCaptureDevice.Position) -> AVCaptureDevice? {
+        let devices = AVCaptureDevice.devices(for: AVMediaType.video) 
         for device in devices {
             if device.position == position {
                 return device
@@ -248,7 +248,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
     }
     
     @objc fileprivate func changeCamera(btn: UIButton) {
-        let cameraCount = AVCaptureDevice.devices(withMediaType: AVMediaTypeVideo).count
+        let cameraCount = AVCaptureDevice.devices(for: AVMediaType.video).count
         
         if cameraCount > 1 {
             var newDevice: AVCaptureDevice?
@@ -260,15 +260,15 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
                 newDevice = cameraOfPosition(position: .front)
             }
             
-            let newInput = try? AVCaptureDeviceInput(device: newDevice)
+            let newInput = try? AVCaptureDeviceInput(device: newDevice!)
             if newInput != nil {
                 session.beginConfiguration()
-                session.removeInput(input)
-                if session.canAddInput(newInput) {
+                session.removeInput(input!)
+                if session.canAddInput(newInput!) {
                     session.addInput(newInput!)
                     input = newInput
                 } else {
-                    session.addInput(input)
+                    session.addInput(input!)
                 }
                 session.commitConfiguration()
             }
@@ -323,12 +323,12 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
     }
     
     @objc fileprivate func takePhoto(btn: UIButton) {
-        let connect = imageOutput.connection(withMediaType: AVMediaTypeVideo)
+        let connect = imageOutput.connection(with: AVMediaType.video)
         if connect == nil {
             print("take photo error ...")
             return
         } else {
-            imageOutput.captureStillImageAsynchronously(from: connect,
+            imageOutput.captureStillImageAsynchronously(from: connect!,
                                                         completionHandler:
             { [weak self] (imageDataSampleBuffer, error) in
                 if imageDataSampleBuffer == nil {

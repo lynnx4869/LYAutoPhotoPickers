@@ -29,10 +29,10 @@ class LYAutoQRCodeController: UIViewController, AVCaptureMetadataOutputObjectsDe
     }
     
     fileprivate func scanQRCode() {
-        let device = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeVideo)
-        let input = try? AVCaptureDeviceInput(device: device)
-        if session.canAddInput(input) {
-            session.addInput(input)
+        let device = AVCaptureDevice.default(for: AVMediaType.video)
+        let input = try? AVCaptureDeviceInput(device: device!)
+        if session.canAddInput(input!) {
+            session.addInput(input!)
         }
         
         let output = AVCaptureMetadataOutput()
@@ -40,11 +40,11 @@ class LYAutoQRCodeController: UIViewController, AVCaptureMetadataOutputObjectsDe
         if session.canAddOutput(output) {
             session.addOutput(output)
         }
-        output.metadataObjectTypes = [AVMetadataObjectTypeQRCode]
+        output.metadataObjectTypes = [AVMetadataObject.ObjectType.qr]
         
         let width = LyConsts.ScreenWidth - 60
         
-        output.rectForMetadataOutputRect(ofInterest: CGRect(x: 30, y: 150, width: width, height: width))
+        output.outputRectConverted(fromMetadataOutputRect: CGRect(x: 30, y: 150, width: width, height: width))
         
 //        NotificationCenter.default.addObserver(forName: NSNotification.Name.AVCaptureInputPortFormatDescriptionDidChange,
 //            object: nil,
@@ -73,7 +73,7 @@ class LYAutoQRCodeController: UIViewController, AVCaptureMetadataOutputObjectsDe
     }
     
     //MARK: - AVCaptureMetadataOutputObjectsDelegate
-    internal func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputMetadataObjects metadataObjects: [Any]!, from connection: AVCaptureConnection!) {
+    internal func metadataOutput(captureOutput: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         if metadataObjects.count > 0 {
             session.stopRunning()
             

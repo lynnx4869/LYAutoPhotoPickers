@@ -62,7 +62,7 @@ private extension SKToolbar {
         setBackgroundImage(UIImage(), forToolbarPosition: .any, barMetrics: .default)
         
         // toolbar
-        if !SKPhotoBrowserOptions.displayToolbar {
+        if !(browser?.showToolBar)! {
             isHidden = true
         }
     }
@@ -121,7 +121,6 @@ private extension SKToolbar {
         toolActionButton.tintColor = UIColor.white
     }
 }
-
 
 class SKToolbarButton: UIButton {
     let insets: UIEdgeInsets = UIEdgeInsets(top: 13.25, left: 17.25, bottom: 13.25, right: 17.25)
