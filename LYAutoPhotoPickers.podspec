@@ -137,4 +137,6 @@ Pod::Spec.new do |s|
   s.dependency "TOCropViewController"
   s.dependency "LYAutoUtils"
 
+  s.pod_target_xcconfig = { 'SWIFT_VERSION' => '4.0' }
+
 end
