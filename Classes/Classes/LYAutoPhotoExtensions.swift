@@ -61,3 +61,176 @@ public extension PHAsset {
     }
     
 }
+
+public extension UIView {
+    
+    public func top(to view: UIView,
+                    attribute: NSLayoutAttribute,
+                    constant: CGFloat) {
+        if translatesAutoresizingMaskIntoConstraints {
+            translatesAutoresizingMaskIntoConstraints = false
+        }
+        
+        let constraint = NSLayoutConstraint(item: self,
+                                            attribute: .top,
+                                            relatedBy: .equal,
+                                            toItem: view,
+                                            attribute: attribute,
+                                            multiplier: 1.0,
+                                            constant: constant)
+        view.addConstraint(constraint)
+    }
+    
+    public func bottom(to view: UIView,
+                       attribute: NSLayoutAttribute,
+                       constant: CGFloat) {
+        if translatesAutoresizingMaskIntoConstraints {
+            translatesAutoresizingMaskIntoConstraints = false
+        }
+        
+        let constraint = NSLayoutConstraint(item: self,
+                                            attribute: .bottom,
+                                            relatedBy: .equal,
+                                            toItem: view,
+                                            attribute: attribute,
+                                            multiplier: 1.0,
+                                            constant: constant)
+        view.addConstraint(constraint)
+    }
+    
+    public func left(to view: UIView,
+                     attribute: NSLayoutAttribute,
+                     constant: CGFloat) {
+        if translatesAutoresizingMaskIntoConstraints {
+            translatesAutoresizingMaskIntoConstraints = false
+        }
+        
+        let constraint = NSLayoutConstraint(item: self,
+                                            attribute: .left,
+                                            relatedBy: .equal,
+                                            toItem: view,
+                                            attribute: attribute,
+                                            multiplier: 1.0,
+                                            constant: constant)
+        view.addConstraint(constraint)
+    }
+    
+    public func right(to view: UIView,
+                      attribute: NSLayoutAttribute,
+                      constant: CGFloat) {
+        if translatesAutoresizingMaskIntoConstraints {
+            translatesAutoresizingMaskIntoConstraints = false
+        }
+        
+        let constraint = NSLayoutConstraint(item: self,
+                                            attribute: .right,
+                                            relatedBy: .equal,
+                                            toItem: view,
+                                            attribute: attribute,
+                                            multiplier: 1.0,
+                                            constant: constant)
+        view.addConstraint(constraint)
+    }
+    
+    public func centerX(to view: UIView,
+                        attribute: NSLayoutAttribute) {
+        if translatesAutoresizingMaskIntoConstraints {
+            translatesAutoresizingMaskIntoConstraints = false
+        }
+        
+        let constraint = NSLayoutConstraint(item: self,
+                                            attribute: .centerX,
+                                            relatedBy: .equal,
+                                            toItem: view,
+                                            attribute: attribute,
+                                            multiplier: 1.0,
+                                            constant: 0.0)
+        view.addConstraint(constraint)
+    }
+    
+    public func centerY(to view: UIView,
+                        attribute: NSLayoutAttribute) {
+        if translatesAutoresizingMaskIntoConstraints {
+            translatesAutoresizingMaskIntoConstraints = false
+        }
+        
+        let constraint = NSLayoutConstraint(item: self,
+                                            attribute: .centerY,
+                                            relatedBy: .equal,
+                                            toItem: view,
+                                            attribute: attribute,
+                                            multiplier: 1.0,
+                                            constant: 0.0)
+        view.addConstraint(constraint)
+    }
+    
+    public func width(to view: UIView,
+                      constant: CGFloat) {
+        if translatesAutoresizingMaskIntoConstraints {
+            translatesAutoresizingMaskIntoConstraints = false
+        }
+        
+        let constraint = NSLayoutConstraint(item: self,
+                                            attribute: .width,
+                                            relatedBy: .equal,
+                                            toItem: nil,
+                                            attribute: .notAnAttribute,
+                                            multiplier: 0.0,
+                                            constant: constant)
+        view.addConstraint(constraint)
+    }
+    
+    public func height(to view: UIView,
+                       constant: CGFloat) {
+        if translatesAutoresizingMaskIntoConstraints {
+            translatesAutoresizingMaskIntoConstraints = false
+        }
+        
+        let constraint = NSLayoutConstraint(item: self,
+                                            attribute: .height,
+                                            relatedBy: .equal,
+                                            toItem: nil,
+                                            attribute: .notAnAttribute,
+                                            multiplier: 0.0,
+                                            constant: constant)
+        view.addConstraint(constraint)
+    }
+    
+    public func edge(to view: UIView, padding: UIEdgeInsets) {
+        if translatesAutoresizingMaskIntoConstraints {
+            translatesAutoresizingMaskIntoConstraints = false
+        }
+        
+        let constraintTop = NSLayoutConstraint(item: self,
+                                               attribute: .top,
+                                               relatedBy: .equal,
+                                               toItem: view,
+                                               attribute: .top,
+                                               multiplier: 1.0,
+                                               constant: padding.top)
+        let constraintBottom = NSLayoutConstraint(item: self,
+                                                  attribute: .bottom,
+                                                  relatedBy: .equal,
+                                                  toItem: view,
+                                                  attribute: .bottom,
+                                                  multiplier: 1.0,
+                                                  constant: padding.bottom)
+        let constraintLeft = NSLayoutConstraint(item: self,
+                                                attribute: .left,
+                                                relatedBy: .equal,
+                                                toItem: view,
+                                                attribute: .left,
+                                                multiplier: 1.0,
+                                                constant: padding.left)
+        let constraintRight = NSLayoutConstraint(item: self,
+                                                 attribute: .right,
+                                                 relatedBy: .equal,
+                                                 toItem: view,
+                                                 attribute: .right,
+                                                 multiplier: 1.0,
+                                                 constant: padding.right)
+        
+        view.addConstraints([constraintTop, constraintBottom, constraintLeft, constraintRight])
+    }
+    
+}

@@ -6,10 +6,8 @@ target 'LYAutoPhotoPickers' do
   use_frameworks!
 
   # Pods for LYAutoPhotoPickers
-  pod 'SnapKit'
   pod 'IDMPhotoBrowser'
   pod 'TOCropViewController'
   pod 'LYAutoUtils'
-  
 
 end

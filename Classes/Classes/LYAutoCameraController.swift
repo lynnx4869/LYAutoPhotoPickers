@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import SnapKit
 import Photos
 import LYAutoUtils
 import TOCropViewController
@@ -59,13 +58,8 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         
         let padding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
         
-        cameraView.snp.makeConstraints { (make) in
-            make.edges.equalTo(view).inset(padding)
-        }
-        
-        photoView.snp.makeConstraints { (make) in
-            make.edges.equalTo(view).inset(padding)
-        }
+        cameraView.edge(to: view, padding: padding)
+        photoView.edge(to: view, padding: padding)
         
         photoView.isHidden = true
         
@@ -132,102 +126,84 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         
         touchView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(pinchImage(pinch:))))
         
-        touchView.snp.makeConstraints { (make) in
-            make.edges.equalTo(cameraView).inset(UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0))
-        }
+        touchView.edge(to: cameraView, padding: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0))
         
         let closeBtn = UIButton(type: .custom)
         closeBtn.setImage(UIImage(named: "ly_cross"), for: .normal)
         closeBtn.addTarget(self, action: #selector(closeCamera(btn:)), for: .touchUpInside)
         cameraView.addSubview(closeBtn)
         
-        closeBtn.snp.makeConstraints { (make) in
-            make.top.equalTo(cameraView.snp.top).offset(15)
-            make.left.equalTo(cameraView.snp.left).offset(10)
-            make.width.equalTo(40)
-            make.height.equalTo(40)
-        }
-        
+        closeBtn.top(to: cameraView, attribute: .top, constant: 15)
+        closeBtn.left(to: cameraView, attribute: .left, constant: 10)
+        closeBtn.width(to: cameraView, constant: 40)
+        closeBtn.height(to: cameraView, constant: 40)
+
         let takePhotoBtn = UIButton(type: .custom)
         takePhotoBtn.setImage(UIImage(named: "ly_round"), for: .normal)
         takePhotoBtn.addTarget(self, action: #selector(takePhoto(btn:)), for: .touchUpInside)
         cameraView.addSubview(takePhotoBtn)
         
-        takePhotoBtn.snp.makeConstraints { (make) in
-            make.bottom.equalTo(cameraView.snp.bottom).offset(-10)
-            make.centerX.equalTo(cameraView.snp.centerX)
-            make.width.equalTo(100)
-            make.height.equalTo(100)
-        }
+        takePhotoBtn.bottom(to: cameraView, attribute: .bottom, constant: -10)
+        takePhotoBtn.centerX(to: cameraView, attribute: .centerX)
+        takePhotoBtn.width(to: cameraView, constant: 100)
+        takePhotoBtn.height(to: cameraView, constant: 100)
         
         let flashChangeBtn = UIButton(type: .custom)
         flashChangeBtn.setImage(UIImage(named: "ly_flash-off"), for: .normal)
         flashChangeBtn.addTarget(self, action: #selector(changeFlash(btn:)), for: .touchUpInside)
         cameraView.addSubview(flashChangeBtn)
         
-        flashChangeBtn.snp.makeConstraints { (make) in
-            make.top.equalTo(cameraView.snp.top).offset(15)
-            make.right.equalTo(cameraView.snp.right).offset(-60)
-            make.width.equalTo(40)
-            make.height.equalTo(40)
-        }
+        flashChangeBtn.top(to: cameraView, attribute: .top, constant: 15)
+        flashChangeBtn.right(to: cameraView, attribute: .right, constant: -60)
+        flashChangeBtn.width(to: cameraView, constant: 40)
+        flashChangeBtn.height(to: cameraView, constant: 40)
         
         let cameraChangeBtn = UIButton(type: .custom)
         cameraChangeBtn.setImage(UIImage(named: "ly_camera-front-on"), for: .normal)
         cameraChangeBtn.addTarget(self, action: #selector(changeCamera(btn:)), for: .touchUpInside)
         cameraView.addSubview(cameraChangeBtn)
         
-        cameraChangeBtn.snp.makeConstraints { (make) in
-            make.top.equalTo(cameraView.snp.top).offset(15)
-            make.right.equalTo(cameraView.snp.right).offset(-10)
-            make.width.equalTo(40)
-            make.height.equalTo(40)
-        }
+        cameraChangeBtn.top(to: cameraView, attribute: .top, constant: 15)
+        cameraChangeBtn.right(to: cameraView, attribute: .right, constant: -10)
+        cameraChangeBtn.width(to: cameraView, constant: 40)
+        cameraChangeBtn.height(to: cameraView, constant: 40)
     }
     
     fileprivate func initDisplayImage() {
         photoView.addSubview(displayImage)
         
         let padding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-        displayImage.snp.makeConstraints { (make) in
-            make.edges.equalTo(photoView).inset(padding)
-        }
+        displayImage.edge(to: photoView, padding: padding)
 
         let takePhotoAgainBtn = UIButton(type: .custom)
         takePhotoAgainBtn.setTitle("重拍", for: .normal)
         takePhotoAgainBtn.addTarget(self, action: #selector(takePhotoAgain(btn:)), for: .touchUpInside)
         photoView.addSubview(takePhotoAgainBtn)
-
-        takePhotoAgainBtn.snp.makeConstraints { (make) in
-            make.top.equalTo(photoView.snp.top).offset(15)
-            make.left.equalTo(photoView.snp.left).offset(10)
-            make.width.equalTo(40)
-            make.height.equalTo(20)
-        }
+        
+        takePhotoAgainBtn.top(to: photoView, attribute: .top, constant: 15)
+        takePhotoAgainBtn.left(to: photoView, attribute: .left, constant: 10)
+        takePhotoAgainBtn.width(to: photoView, constant: 40)
+        takePhotoAgainBtn.height(to: photoView, constant: 20)
         
         let cutBtn = UIButton()
         cutBtn.setImage(UIImage(named: "ly_cut"), for: .normal)
         cutBtn.addTarget(self, action: #selector(cutPhoto(btn:)), for: .touchUpInside)
         photoView.addSubview(cutBtn)
         
-        cutBtn.snp.makeConstraints { (make) in
-            make.bottom.equalTo(photoView.snp.bottom).offset(-10)
-            make.right.equalTo(photoView.snp.right).offset(-60)
-            make.width.equalTo(40)
-            make.height.equalTo(40)
-        }
+        cutBtn.bottom(to: photoView, attribute: .bottom, constant: -10)
+        cutBtn.right(to: photoView, attribute: .right, constant: -60)
+        cutBtn.width(to: photoView, constant: 40)
+        cutBtn.height(to: photoView, constant: 40)
         
         let sureBtn = UIButton()
         sureBtn.setImage(UIImage(named: "ly_sure"), for: .normal)
         sureBtn.addTarget(self, action: #selector(surePhoto(btn:)), for: .touchUpInside)
         photoView.addSubview(sureBtn)
         
-        sureBtn.snp.makeConstraints { (make) in
-            make.bottom.equalTo(photoView.snp.bottom).offset(-10)
-            make.right.equalTo(photoView.snp.right).offset(-10)
-            make.width.equalTo(40)
-            make.height.equalTo(40)
-        }
+        sureBtn.bottom(to: photoView, attribute: .bottom, constant: -10)
+        sureBtn.right(to: photoView, attribute: .right, constant: -10)
+        sureBtn.width(to: photoView, constant: 40)
+        sureBtn.height(to: photoView, constant: 40)
         
     }
     

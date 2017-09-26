@@ -11,14 +11,12 @@ PODS:
   - SDWebImage (4.0.0):
     - SDWebImage/Core (= 4.0.0)
   - SDWebImage/Core (4.0.0)
-  - SnapKit (4.0.0)
   - SSZipArchive (2.0.7)
   - TOCropViewController (2.1.0)
 
 DEPENDENCIES:
   - IDMPhotoBrowser
   - LYAutoUtils
-  - SnapKit
   - TOCropViewController
 
 SPEC CHECKSUMS:
@@ -27,10 +25,9 @@ SPEC CHECKSUMS:
   LYAutoUtils: 771b815bdb71853a1ce4bbf7b049f3fda11b0eb2
   pop: 82ca6b068ce9278fd350fd9dd09482a0ce9492e6
   SDWebImage: 76a6348bdc74eb5a55dd08a091ef298e56b55e41
-  SnapKit: a42d492c16e80209130a3379f73596c3454b7694
   SSZipArchive: 8c197761d66bd33e7f8b5b51ee57dff303971150
   TOCropViewController: f88194a084f6afe1fd6f21a3f0edda7dd097e38b
 
-PODFILE CHECKSUM: 1f76d57e29654addf71f3c3606ea9eb2066ef91a
+PODFILE CHECKSUM: 41da364d44bd4d847b20aa9dadc164ba42ed0790
 
 COCOAPODS: 1.4.0.beta.1

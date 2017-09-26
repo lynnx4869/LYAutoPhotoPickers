@@ -25,7 +25,7 @@ Pod::Spec.new do |s|
   #   * Write the description between the DESC delimiters below.
   #   * Finally, don't worry about the indent, CocoaPods strips it!
   s.description  = <<-DESC
-                    Swift Lib Image Picker.
+                    Swift Lib Image Picker. For me.
                    DESC
 
   s.homepage     = "https://github.com/lynnx4869/LYAutoPhotoPickers"
@@ -133,7 +133,6 @@ Pod::Spec.new do |s|
   s.requires_arc = true
 
   # s.xcconfig = { "HEADER_SEARCH_PATHS" => "$(SDKROOT)/usr/include/libxml2" }
-  s.dependency "SnapKit"
   s.dependency "IDMPhotoBrowser"
   s.dependency "TOCropViewController"
   s.dependency "LYAutoUtils"
