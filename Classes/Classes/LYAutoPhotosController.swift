@@ -10,7 +10,7 @@ import UIKit
 import Photos
 import LYAutoUtils
 import TOCropViewController
-import SKPhotoBrowser
+import IDMPhotoBrowser
 
 class LYAutoPhotoAsset: NSObject {
     
@@ -230,25 +230,20 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
     internal func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
         let cell = collectionView.cellForItem(at: indexPath) as! LYAutoPhotoSelectCell
-        let originImage = cell.tumImage.image
         
         let photoAsset = photos[indexPath.item]
-        let array: [SKPhoto] = [SKPhoto.photoWithImage(photoAsset.asset.getOriginAssetImage())]
+        let array: [IDMPhoto] = [IDMPhoto(image: photoAsset.asset.getOriginAssetImage())]
         
-        SKPhotoBrowserOptions.displayToolbar = false
-        SKPhotoBrowserOptions.displayCounterLabel = false
-        SKPhotoBrowserOptions.displayBackAndForwardButton = false
-        SKPhotoBrowserOptions.displayAction = false
-        SKPhotoBrowserOptions.displayHorizontalScrollIndicator = false
-        SKPhotoBrowserOptions.displayVerticalScrollIndicator = false
-        SKPhotoBrowserOptions.displayStatusbar = false
-        SKPhotoBrowserOptions.displayDeleteButton = false
-        SKPhotoBrowserOptions.enableZoomBlackArea = true
-        SKPhotoBrowserOptions.enableSingleTapDismiss = true
-        SKPhotoBrowserOptions.bounceAnimation = true
+        let browser = IDMPhotoBrowser(photos: array, animatedFrom: cell)
         
-        let browser = SKPhotoBrowser(originImage: originImage!, photos: array, animatedFromView: cell)
-        present(browser, animated: true, completion: nil)
+        // Set options
+        browser?.displayActionButton = false
+        browser?.displayArrowButton = false
+        browser?.displayDoneButton = false
+        browser?.autoHideInterface = false
+        browser?.displayCounterLabel = true
+        browser?.dismissOnTouch = true
+        present(browser!, animated: true, completion: nil)
     }
     
     internal func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
