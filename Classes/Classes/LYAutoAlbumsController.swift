@@ -39,7 +39,7 @@ class LYAutoAlbumsController: LYAutoPhotoBasicController, UITableViewDelegate, U
         tableView.delegate = self
         tableView.dataSource = self
         tableView.separatorStyle = .none
-        tableView.register(UINib(nibName: "LYAutoAlbumCell", bundle: Bundle.main), forCellReuseIdentifier: "LYAutoAlbumCellId")
+        tableView.register(UINib(nibName: "LYAutoAlbumCell", bundle: Bundle(for: LYAutoPhotoPickers.self)), forCellReuseIdentifier: "LYAutoAlbumCellId")
         tableView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(tableView)
         
@@ -140,7 +140,7 @@ class LYAutoAlbumsController: LYAutoPhotoBasicController, UITableViewDelegate, U
     }
     
     fileprivate func gotoOneAlbum(assetCollection: PHAssetCollection, animated: Bool) {
-        let pvc = LYAutoPhotosController(nibName: "LYAutoPhotosController", bundle: Bundle.main)
+        let pvc = LYAutoPhotosController(nibName: "LYAutoPhotosController", bundle: Bundle(for: LYAutoPhotoPickers.self))
         pvc.assetCollection = assetCollection
         pvc.maxSelects = maxSelects
         pvc.block = block

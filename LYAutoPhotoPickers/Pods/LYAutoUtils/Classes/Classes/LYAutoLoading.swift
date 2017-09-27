@@ -78,7 +78,7 @@ fileprivate class LYAutoLoadingView: UIView {
         loadingBoard.layer.borderWidth = 0.25
         addSubview(loadingBoard)
         
-        logoImage.image = UIImage(named: "ly_loading")?.imageChange(color: color)
+        logoImage.image = UIImage(named: "ly_loading", in: Bundle(for: LYAutoUtils.self), compatibleWith: nil)?.imageChange(color: color)
         logoImage.center = CGPoint(x: 70, y: 50)
         loadingBoard.addSubview(logoImage)
     }

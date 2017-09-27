@@ -22,7 +22,7 @@ open class LYAutoDatePicker: UIViewController {
                           color: UIColor?,
                           sureAction: @escaping (Date)->Void) -> LYAutoDatePicker {
         
-        let datepicker = LYAutoDatePicker(nibName: "LYAutoDatePicker", bundle: Bundle.main)
+        let datepicker = LYAutoDatePicker(nibName: "LYAutoDatePicker", bundle: Bundle(for: LYAutoUtils.self))
         
         datepicker.type = type
         datepicker.time = time

@@ -4,7 +4,7 @@ PODS:
     - DACircularProgress
     - pop
     - SDWebImage (= 4.0.0)
-  - LYAutoUtils (0.0.7):
+  - LYAutoUtils (0.1.2):
     - pop (~> 1.0)
     - SSZipArchive
   - pop (1.0.10)
@@ -22,7 +22,7 @@ DEPENDENCIES:
 SPEC CHECKSUMS:
   DACircularProgress: 4dd437c0fc3da5161cb289e07ac449493d41db71
   IDMPhotoBrowser: b96159fe4adb991a844068eb17dab9c0b7d7e51a
-  LYAutoUtils: 37dab98f4803a727376cab88f8028c3a6227cdfd
+  LYAutoUtils: bf8fd50574af2c79f69a0c8940d6c3bb46296a26
   pop: 82ca6b068ce9278fd350fd9dd09482a0ce9492e6
   SDWebImage: 76a6348bdc74eb5a55dd08a091ef298e56b55e41
   SSZipArchive: 8c197761d66bd33e7f8b5b51ee57dff303971150

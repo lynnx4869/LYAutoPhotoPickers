@@ -1,5 +1,5 @@
 //
-//  LYAutoPhotoManager.swift
+//  LYAutoPhotoPickers.swift
 //  LYAutoPhotoPickers
 //
 //  Created by xianing on 2017/6/27.
@@ -15,7 +15,7 @@ public enum LYAutoPhotoType {
     case qrcode
 }
 
-public struct LYAutoPhotoManager {
+public class LYAutoPhotoPickers {
     
     public var type: LYAutoPhotoType = .camera
     public var isRateTailor: Bool = false
@@ -73,7 +73,7 @@ public struct LYAutoPhotoManager {
     }
     
     fileprivate func getErrorController() -> UIViewController {
-        let aec = LYAutoAuthErrorController(nibName: "LYAutoAuthErrorController", bundle: Bundle.main)
+        let aec = LYAutoAuthErrorController(nibName: "LYAutoAuthErrorController", bundle: Bundle(for: LYAutoPhotoPickers.self))
         aec.type = type
         
         return aec

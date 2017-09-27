@@ -40,12 +40,12 @@ class ViewController: UIViewController {
                 type = .qrcode
             }
             
-            var manager = LYAutoPhotoManager()
-            manager.type = type
-            manager.isRateTailor = false
-            manager.tailoringRate = 0
-            manager.maxSelects = 1
-            manager.block = { [weak self] (result, images) in
+            let pickers = LYAutoPhotoPickers()
+            pickers.type = type
+            pickers.isRateTailor = false
+            pickers.tailoringRate = 0
+            pickers.maxSelects = 1
+            pickers.block = { [weak self] (result, images) in
                 if result {
                     self?.displayImage.image = images?[0]
                 } else {
@@ -53,7 +53,7 @@ class ViewController: UIViewController {
                 }
             }
             
-            manager.showPhoto(in: self)
+            pickers.showPhoto(in: self)
         }
     }
 

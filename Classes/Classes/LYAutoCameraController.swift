@@ -129,7 +129,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         touchView.edge(to: cameraView, padding: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0))
         
         let closeBtn = UIButton(type: .custom)
-        closeBtn.setImage(UIImage(named: "ly_cross"), for: .normal)
+        closeBtn.setImage(UIImage(named: "ly_cross", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
         closeBtn.addTarget(self, action: #selector(closeCamera(btn:)), for: .touchUpInside)
         cameraView.addSubview(closeBtn)
         
@@ -139,7 +139,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         closeBtn.height(to: cameraView, constant: 40)
 
         let takePhotoBtn = UIButton(type: .custom)
-        takePhotoBtn.setImage(UIImage(named: "ly_round"), for: .normal)
+        takePhotoBtn.setImage(UIImage(named: "ly_round", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
         takePhotoBtn.addTarget(self, action: #selector(takePhoto(btn:)), for: .touchUpInside)
         cameraView.addSubview(takePhotoBtn)
         
@@ -149,7 +149,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         takePhotoBtn.height(to: cameraView, constant: 100)
         
         let flashChangeBtn = UIButton(type: .custom)
-        flashChangeBtn.setImage(UIImage(named: "ly_flash-off"), for: .normal)
+        flashChangeBtn.setImage(UIImage(named: "ly_flash-off", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
         flashChangeBtn.addTarget(self, action: #selector(changeFlash(btn:)), for: .touchUpInside)
         cameraView.addSubview(flashChangeBtn)
         
@@ -159,7 +159,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         flashChangeBtn.height(to: cameraView, constant: 40)
         
         let cameraChangeBtn = UIButton(type: .custom)
-        cameraChangeBtn.setImage(UIImage(named: "ly_camera-front-on"), for: .normal)
+        cameraChangeBtn.setImage(UIImage(named: "ly_camera-front-on", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
         cameraChangeBtn.addTarget(self, action: #selector(changeCamera(btn:)), for: .touchUpInside)
         cameraView.addSubview(cameraChangeBtn)
         
@@ -186,7 +186,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         takePhotoAgainBtn.height(to: photoView, constant: 20)
         
         let cutBtn = UIButton()
-        cutBtn.setImage(UIImage(named: "ly_cut"), for: .normal)
+        cutBtn.setImage(UIImage(named: "ly_cut", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
         cutBtn.addTarget(self, action: #selector(cutPhoto(btn:)), for: .touchUpInside)
         photoView.addSubview(cutBtn)
         
@@ -196,7 +196,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         cutBtn.height(to: photoView, constant: 40)
         
         let sureBtn = UIButton()
-        sureBtn.setImage(UIImage(named: "ly_sure"), for: .normal)
+        sureBtn.setImage(UIImage(named: "ly_sure", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
         sureBtn.addTarget(self, action: #selector(surePhoto(btn:)), for: .touchUpInside)
         photoView.addSubview(sureBtn)
         
@@ -253,14 +253,14 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
     
     @objc fileprivate func changeFlash(btn: UIButton) {
         if device?.flashMode == .on {
-            btn.setImage(UIImage(named: "ly_flash-off"), for: .normal)
+            btn.setImage(UIImage(named: "ly_flash-off", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
             
             if (try? device?.lockForConfiguration()) != nil {
                 device?.flashMode = .off
                 device?.unlockForConfiguration()
             }
         } else {
-            btn.setImage(UIImage(named: "ly_flash"), for: .normal)
+            btn.setImage(UIImage(named: "ly_flash", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
             
             if (try? device?.lockForConfiguration()) != nil {
                 device?.flashMode = .on

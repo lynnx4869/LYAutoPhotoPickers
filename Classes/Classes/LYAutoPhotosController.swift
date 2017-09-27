@@ -76,7 +76,7 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
         
         collectionView.delegate = self
         collectionView.dataSource = self
-        collectionView.register(UINib(nibName: "LYAutoPhotoSelectCell", bundle: Bundle.main), forCellWithReuseIdentifier: "LYAutoPhotoSelectCellId")
+        collectionView.register(UINib(nibName: "LYAutoPhotoSelectCell", bundle: Bundle(for: LYAutoPhotoPickers.self)), forCellWithReuseIdentifier: "LYAutoPhotoSelectCellId")
         collectionView.register(LYAutoPhotoHeaderView.classForCoder(), forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: "LYAutoPhotoHeaderViewId")
         collectionView.register(LYAutoPhotoFooterView.classForCoder(), forSupplementaryViewOfKind: UICollectionElementKindSectionFooter, withReuseIdentifier: "LYAutoPhotoFooterViewId")
         

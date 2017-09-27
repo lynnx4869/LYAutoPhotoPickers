@@ -42,7 +42,7 @@
 		8B838CCC1F0625850009A4D9 /* LYAutoPhotosController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8B838CCA1F0625850009A4D9 /* LYAutoPhotosController.xib */; };
 		8B838CCF1F062BD80009A4D9 /* LYAutoPhotoSelectCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B838CCD1F062BD80009A4D9 /* LYAutoPhotoSelectCell.swift */; };
 		8B838CD01F062BD80009A4D9 /* LYAutoPhotoSelectCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8B838CCE1F062BD80009A4D9 /* LYAutoPhotoSelectCell.xib */; };
-		8BCA8D9F1F02381A00013B6E /* LYAutoPhotoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BCA8D9E1F02381A00013B6E /* LYAutoPhotoManager.swift */; };
+		8BCA8D9F1F02381A00013B6E /* LYAutoPhotoPickers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BCA8D9E1F02381A00013B6E /* LYAutoPhotoPickers.swift */; };
 		8BCA8DA21F023F7300013B6E /* LYAutoAuthErrorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BCA8DA01F023F7300013B6E /* LYAutoAuthErrorController.swift */; };
 		8BCA8DA31F023F7300013B6E /* LYAutoAuthErrorController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8BCA8DA11F023F7300013B6E /* LYAutoAuthErrorController.xib */; };
 /* End PBXBuildFile section */
@@ -86,7 +86,7 @@
 		8B838CCA1F0625850009A4D9 /* LYAutoPhotosController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LYAutoPhotosController.xib; sourceTree = "<group>"; };
 		8B838CCD1F062BD80009A4D9 /* LYAutoPhotoSelectCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LYAutoPhotoSelectCell.swift; sourceTree = "<group>"; };
 		8B838CCE1F062BD80009A4D9 /* LYAutoPhotoSelectCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LYAutoPhotoSelectCell.xib; sourceTree = "<group>"; };
-		8BCA8D9E1F02381A00013B6E /* LYAutoPhotoManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LYAutoPhotoManager.swift; sourceTree = "<group>"; };
+		8BCA8D9E1F02381A00013B6E /* LYAutoPhotoPickers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LYAutoPhotoPickers.swift; sourceTree = "<group>"; };
 		8BCA8DA01F023F7300013B6E /* LYAutoAuthErrorController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LYAutoAuthErrorController.swift; sourceTree = "<group>"; };
 		8BCA8DA11F023F7300013B6E /* LYAutoAuthErrorController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LYAutoAuthErrorController.xib; sourceTree = "<group>"; };
 		8FB9C1EE28964138CD78EF4C /* Pods-LYAutoPhotoPickers.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LYAutoPhotoPickers.debug.xcconfig"; path = "Pods/Target Support Files/Pods-LYAutoPhotoPickers/Pods-LYAutoPhotoPickers.debug.xcconfig"; sourceTree = "<group>"; };
@@ -158,7 +158,7 @@
 		8B1F993D1EF231F1004DA42A /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				8BCA8D9E1F02381A00013B6E /* LYAutoPhotoManager.swift */,
+				8BCA8D9E1F02381A00013B6E /* LYAutoPhotoPickers.swift */,
 				8BCA8DA01F023F7300013B6E /* LYAutoAuthErrorController.swift */,
 				8BCA8DA11F023F7300013B6E /* LYAutoAuthErrorController.xib */,
 				8B3895F11F033A470052C479 /* LYAutoPhotoBasicController.swift */,
@@ -380,7 +380,7 @@
 				8B838CCB1F0625850009A4D9 /* LYAutoPhotosController.swift in Sources */,
 				8B838CCF1F062BD80009A4D9 /* LYAutoPhotoSelectCell.swift in Sources */,
 				8B3895F41F033E3C0052C479 /* LYAutoCameraController.swift in Sources */,
-				8BCA8D9F1F02381A00013B6E /* LYAutoPhotoManager.swift in Sources */,
+				8BCA8D9F1F02381A00013B6E /* LYAutoPhotoPickers.swift in Sources */,
 				8B60D91A1F0A203F005D57DD /* LYAutoQRCodeController.swift in Sources */,
 				8B3895F21F033A470052C479 /* LYAutoPhotoBasicController.swift in Sources */,
 				8B1F992B1EF231B7004DA42A /* AppDelegate.swift in Sources */,
