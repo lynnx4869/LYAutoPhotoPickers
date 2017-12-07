@@ -47,7 +47,8 @@ class ViewController: UIViewController {
             pickers.maxSelects = 1
             pickers.block = { [weak self] (result, images) in
                 if result {
-                    self?.displayImage.image = images?[0]
+                    let image = images![0]
+                    self?.displayImage.image = image.image
                 } else {
                     print("photo picker cancel...")
                 }

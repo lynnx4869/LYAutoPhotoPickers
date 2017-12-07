@@ -15,18 +15,26 @@ public enum LYAutoPhotoType {
     case qrcode
 }
 
-public class LYAutoPhotoPickers {
+open class LYAutoPhotoAsset: NSObject {
+    var asset: PHAsset!
+    var tumImage: UIImage!
+    var image: UIImage!
+}
+
+public typealias LYAutoCallback = (Bool, [LYAutoPhotoAsset]?) -> Void
+
+open class LYAutoPhotoPickers {
     
-    public var type: LYAutoPhotoType = .camera
-    public var isRateTailor: Bool = false
-    public var tailoringRate: Double = 0.0
-    public var maxSelects: Int = 1
-    public var block: (Bool, [UIImage]?)->Void = {_,_  in }
-    public var qrBlock: ()->Void = { }
+    open var type: LYAutoPhotoType = .camera
+    open var isRateTailor: Bool = false
+    open var tailoringRate: Double = 0.0
+    open var maxSelects: Int = 1
+    open var block: LYAutoCallback = {_,_  in }
+    open var qrBlock: ()->Void = { }
     
     public init() {}
     
-    public func showPhoto(in pvc: UIViewController) {
+    open func showPhoto(in pvc: UIViewController) {
         checkPhotoAuth { (vc) in
             DispatchQueue.main.async {
                 pvc.present(vc, animated: true, completion: nil)

@@ -340,7 +340,9 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
     }
     
     @objc fileprivate func surePhoto(btn: UIButton) {
-        block!(true, [image!])
+        let photoAsset = LYAutoPhotoAsset()
+        photoAsset.image = image
+        block!(true, [photoAsset])
         
         dismiss(animated: true, completion: nil)
     }
@@ -352,7 +354,10 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
     
     func cropViewController(_ cropViewController: TOCropViewController, didCropToImage image: UIImage, rect cropRect: CGRect, angle: Int) {
         self.image = nil
-        block!(true, [image])
+        
+        let photoAsset = LYAutoPhotoAsset()
+        photoAsset.image = image
+        block!(true, [photoAsset])
  
         cropViewController.dismiss(animated: false) { 
             [weak self] in

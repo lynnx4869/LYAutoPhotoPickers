@@ -12,13 +12,6 @@ import LYAutoUtils
 import TOCropViewController
 import IDMPhotoBrowser
 
-class LYAutoPhotoAsset: NSObject {
-    
-    var asset: PHAsset!
-    var tumImage: UIImage!
-    
-}
-
 class LYAutoPhotoHeaderView: UICollectionReusableView {
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -143,11 +136,10 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
     }
     
     @IBAction func sureSelectPhotos(_ sender: Any) {
-        var images = [UIImage]()
         for photoAsset in selectPhotos {
-            images.append(photoAsset.asset.getOriginAssetImage())
+            photoAsset.image = photoAsset.asset.getOriginAssetImage()
         }
-        self.block!(true, images)
+        self.block!(true, selectPhotos)
         
         navigationController?.dismiss(animated: true, completion: nil)
     }
@@ -277,7 +269,9 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
     }
     
     internal func cropViewController(_ cropViewController: TOCropViewController, didCropToImage image: UIImage, rect cropRect: CGRect, angle: Int) {
-        self.block!(true, [image])
+        let photoAsset = selectPhotos.first
+        photoAsset?.image = image
+        self.block!(true, [photoAsset!])
         
         cropViewController.dismiss(animated: false) { 
             self.navigationController?.dismiss(animated: true, completion: nil)

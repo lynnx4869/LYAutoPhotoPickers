@@ -12,7 +12,7 @@ class LYAutoPhotoBasicController: UIViewController {
     
     var isRateTailor: Bool = false
     var tailoringRate: Double = 0
-    var block: ((Bool, [UIImage]?)->Void)?
+    var block: LYAutoCallback?
 
     override func viewDidLoad() {
         super.viewDidLoad()
