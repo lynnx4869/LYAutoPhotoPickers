@@ -8,7 +8,7 @@
 
 import UIKit
 
-public protocol LYAutoPhotoTapDelegate: class {
+protocol LYAutoPhotoTapDelegate: class {
     
     func tapPhoto(sender: UIView?, index: Int)
     

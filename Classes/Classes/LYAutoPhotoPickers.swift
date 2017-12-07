@@ -16,9 +16,9 @@ public enum LYAutoPhotoType {
 }
 
 open class LYAutoPhotoAsset: NSObject {
-    var asset: PHAsset!
-    var tumImage: UIImage!
-    var image: UIImage!
+    open var asset: PHAsset!
+    open var tumImage: UIImage!
+    open var image: UIImage!
 }
 
 public typealias LYAutoCallback = (Bool, [LYAutoPhotoAsset]?) -> Void

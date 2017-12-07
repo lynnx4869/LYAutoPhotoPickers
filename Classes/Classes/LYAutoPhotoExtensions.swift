@@ -11,9 +11,9 @@ import Photos
 
 let kPhotoTumLength: Int = 200
 
-public extension PHAsset {
+extension PHAsset {
     
-    public func getAssetImage(size: CGSize) -> UIImage {
+    func getAssetImage(size: CGSize) -> UIImage {
         let options = PHImageRequestOptions()
         options.isSynchronous = true
         
@@ -29,11 +29,11 @@ public extension PHAsset {
         return image
     }
     
-    public func getOriginAssetImage() -> UIImage {
+    func getOriginAssetImage() -> UIImage {
         return getAssetImage(size: CGSize(width: self.pixelWidth, height: self.pixelHeight))
     }
     
-    public func getTumAssetImage() -> UIImage {
+    func getTumAssetImage() -> UIImage {
         var size = CGSize.zero
         if self.pixelWidth > kPhotoTumLength {
             size = CGSize(width: kPhotoTumLength, height: kPhotoTumLength*self.pixelHeight/self.pixelWidth)
@@ -46,7 +46,7 @@ public extension PHAsset {
         return getAssetImage(size: size)
     }
     
-    public func getAssetUrl() -> URL {
+    func getAssetUrl() -> URL {
         var urlString: String!
         let options = PHImageRequestOptions()
         options.isSynchronous = true
@@ -62,9 +62,9 @@ public extension PHAsset {
     
 }
 
-public extension UIView {
+extension UIView {
     
-    public func top(to view: UIView,
+    func top(to view: UIView,
                     attribute: NSLayoutAttribute,
                     constant: CGFloat) {
         if translatesAutoresizingMaskIntoConstraints {
@@ -81,7 +81,7 @@ public extension UIView {
         view.addConstraint(constraint)
     }
     
-    public func bottom(to view: UIView,
+    func bottom(to view: UIView,
                        attribute: NSLayoutAttribute,
                        constant: CGFloat) {
         if translatesAutoresizingMaskIntoConstraints {
@@ -98,7 +98,7 @@ public extension UIView {
         view.addConstraint(constraint)
     }
     
-    public func left(to view: UIView,
+    func left(to view: UIView,
                      attribute: NSLayoutAttribute,
                      constant: CGFloat) {
         if translatesAutoresizingMaskIntoConstraints {
@@ -115,7 +115,7 @@ public extension UIView {
         view.addConstraint(constraint)
     }
     
-    public func right(to view: UIView,
+    func right(to view: UIView,
                       attribute: NSLayoutAttribute,
                       constant: CGFloat) {
         if translatesAutoresizingMaskIntoConstraints {
@@ -132,7 +132,7 @@ public extension UIView {
         view.addConstraint(constraint)
     }
     
-    public func centerX(to view: UIView,
+    func centerX(to view: UIView,
                         attribute: NSLayoutAttribute) {
         if translatesAutoresizingMaskIntoConstraints {
             translatesAutoresizingMaskIntoConstraints = false
@@ -148,7 +148,7 @@ public extension UIView {
         view.addConstraint(constraint)
     }
     
-    public func centerY(to view: UIView,
+    func centerY(to view: UIView,
                         attribute: NSLayoutAttribute) {
         if translatesAutoresizingMaskIntoConstraints {
             translatesAutoresizingMaskIntoConstraints = false
@@ -164,7 +164,7 @@ public extension UIView {
         view.addConstraint(constraint)
     }
     
-    public func width(to view: UIView,
+    func width(to view: UIView,
                       constant: CGFloat) {
         if translatesAutoresizingMaskIntoConstraints {
             translatesAutoresizingMaskIntoConstraints = false
@@ -180,7 +180,7 @@ public extension UIView {
         view.addConstraint(constraint)
     }
     
-    public func height(to view: UIView,
+    func height(to view: UIView,
                        constant: CGFloat) {
         if translatesAutoresizingMaskIntoConstraints {
             translatesAutoresizingMaskIntoConstraints = false
@@ -196,7 +196,7 @@ public extension UIView {
         view.addConstraint(constraint)
     }
     
-    public func edge(to view: UIView, padding: UIEdgeInsets) {
+    func edge(to view: UIView, padding: UIEdgeInsets) {
         if translatesAutoresizingMaskIntoConstraints {
             translatesAutoresizingMaskIntoConstraints = false
         }
