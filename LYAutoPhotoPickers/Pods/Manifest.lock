@@ -4,15 +4,15 @@ PODS:
     - DACircularProgress
     - pop
     - SDWebImage (= 4.0.0)
-  - LYAutoUtils (0.1.2):
+  - LYAutoUtils (0.1.5):
     - pop (~> 1.0)
     - SSZipArchive
   - pop (1.0.10)
   - SDWebImage (4.0.0):
     - SDWebImage/Core (= 4.0.0)
   - SDWebImage/Core (4.0.0)
-  - SSZipArchive (2.1.0)
-  - TOCropViewController (2.1.0)
+  - SSZipArchive (2.1.1)
+  - TOCropViewController (2.3.5)
 
 DEPENDENCIES:
   - IDMPhotoBrowser
@@ -22,11 +22,11 @@ DEPENDENCIES:
 SPEC CHECKSUMS:
   DACircularProgress: 4dd437c0fc3da5161cb289e07ac449493d41db71
   IDMPhotoBrowser: b96159fe4adb991a844068eb17dab9c0b7d7e51a
-  LYAutoUtils: bf8fd50574af2c79f69a0c8940d6c3bb46296a26
+  LYAutoUtils: ab6d99cfb97559f46c0a0cd6f1ee1945c99127b0
   pop: 82ca6b068ce9278fd350fd9dd09482a0ce9492e6
   SDWebImage: 76a6348bdc74eb5a55dd08a091ef298e56b55e41
-  SSZipArchive: 1e8e53dcb11bca3ded4738958dc49fc467320a14
-  TOCropViewController: f88194a084f6afe1fd6f21a3f0edda7dd097e38b
+  SSZipArchive: 14401ade5f8e82aba1ff03e9f88e9de60937ae60
+  TOCropViewController: a21b39c910d161600a26b6e3f89a58707afaa4f8
 
 PODFILE CHECKSUM: 41da364d44bd4d847b20aa9dadc164ba42ed0790
 

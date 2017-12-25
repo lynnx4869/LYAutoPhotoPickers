@@ -13,9 +13,10 @@ let kPhotoTumLength: Int = 200
 
 extension PHAsset {
     
-    func getAssetImage(size: CGSize) -> UIImage {
+    func getAssetImage(_ size: CGSize) -> UIImage {
         let options = PHImageRequestOptions()
         options.isSynchronous = true
+        options.isNetworkAccessAllowed = true
         
         var image: UIImage!
         PHImageManager.default().requestImage(for: self,
@@ -30,7 +31,8 @@ extension PHAsset {
     }
     
     func getOriginAssetImage() -> UIImage {
-        return getAssetImage(size: CGSize(width: self.pixelWidth, height: self.pixelHeight))
+        let size = CGSize(width: self.pixelWidth, height: self.pixelHeight)
+        return getAssetImage(size)
     }
     
     func getTumAssetImage() -> UIImage {
@@ -43,7 +45,7 @@ extension PHAsset {
             size = CGSize(width: self.pixelWidth, height: self.pixelHeight)
         }
         
-        return getAssetImage(size: size)
+        return getAssetImage(size)
     }
     
     func getAssetUrl() -> URL {

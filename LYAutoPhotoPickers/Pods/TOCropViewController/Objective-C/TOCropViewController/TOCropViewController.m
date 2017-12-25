@@ -27,6 +27,7 @@
 #import "TOCroppedImageAttributes.h"
 
 static const CGFloat kTOCropViewControllerTitleTopPadding = 14.0f;
+static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
 
 @interface TOCropViewController () <UIActionSheetDelegate, UIViewControllerTransitioningDelegate, TOCropViewDelegate>
 
@@ -46,14 +47,24 @@ static const CGFloat kTOCropViewControllerTitleTopPadding = 14.0f;
 @property (nonatomic, copy) void (^prepareForTransitionHandler)(void);
 @property (nonatomic, strong) TOCropViewControllerTransitioning *transitionController;
 @property (nonatomic, assign) BOOL inTransition;
-@property (nonatomic, assign) BOOL initialLayout;
 
 /* If pushed from a navigation controller, the visibility of that controller's bars. */
 @property (nonatomic, assign) BOOL navigationBarHidden;
 @property (nonatomic, assign) BOOL toolbarHidden;
 
-/* Convenience method for checking vertical state */
+/* State for whether content is being laid out vertically or horizontally */
 @property (nonatomic, readonly) BOOL verticalLayout;
+
+/* Convenience method for managing status bar state */
+@property (nonatomic, readonly) BOOL overrideStatusBar; // Whether the view controller needs to touch the status bar
+@property (nonatomic, readonly) BOOL statusBarHidden;   // Whether it should be hidden or visible at this point
+@property (nonatomic, readonly) CGFloat statusBarHeight; // The height of the status bar when visible
+
+/* Convenience method for getting the vertical inset for both iPhone X and status bar */
+@property (nonatomic, readonly) UIEdgeInsets statusBarSafeInsets;
+
+/* Flag to perform initial setup on the first run */
+@property (nonatomic, assign) BOOL firstTime;
 
 /* On iOS 7, the popover view controller that appears when tapping 'Done' */
 #pragma clang diagnostic push
@@ -65,27 +76,27 @@ static const CGFloat kTOCropViewControllerTitleTopPadding = 14.0f;
 
 @implementation TOCropViewController
 
-CGFloat titleLabelHeight;
-
 - (instancetype)initWithCroppingStyle:(TOCropViewCroppingStyle)style image:(UIImage *)image
 {
     NSParameterAssert(image);
 
     self = [super init];
     if (self) {
+        // Init parameters
+        _image = image;
+        _croppingStyle = style;
+        
+        // Set up base view controller behaviour
         self.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
         self.modalPresentationStyle = UIModalPresentationFullScreen;
         self.automaticallyAdjustsScrollViewInsets = NO;
         
+        // Controller object that handles the transition animation when presenting / dismissing this app
         _transitionController = [[TOCropViewControllerTransitioning alloc] init];
-        _image = image;
-        _croppingStyle = style;
-        
+
+        // Default initial behaviour
         _aspectRatioPreset = TOCropViewControllerAspectRatioPresetOriginal;
         _toolbarPosition = TOCropViewControllerToolbarPositionBottom;
-        _rotateClockwiseButtonHidden = YES;
-		
-		titleLabelHeight = 0.0f;
     }
 	
     return self;
@@ -99,37 +110,44 @@ CGFloat titleLabelHeight;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+
+    // Set up view controller properties
+    self.transitioningDelegate = self;
+    self.view.backgroundColor = self.cropView.backgroundColor;
+    
     BOOL circularMode = (self.croppingStyle == TOCropViewCroppingStyleCircular);
 
+    // Layout the views initially
     self.cropView.frame = [self frameForCropViewWithVerticalLayout:self.verticalLayout];
-    self.toolbar.frame = [self frameForToolBarWithVerticalLayout:self.verticalLayout];
+    self.toolbar.frame = [self frameForToolbarWithVerticalLayout:self.verticalLayout];
 
+    // Set up toolbar default behaviour
+    self.toolbar.clampButtonHidden = self.aspectRatioPickerButtonHidden || circularMode;
+    self.toolbar.rotateClockwiseButtonHidden = self.rotateClockwiseButtonHidden;
+    
+    // Set up the toolbar button actions
     __weak typeof(self) weakSelf = self;
     self.toolbar.doneButtonTapped   = ^{ [weakSelf doneButtonTapped]; };
     self.toolbar.cancelButtonTapped = ^{ [weakSelf cancelButtonTapped]; };
-    
     self.toolbar.resetButtonTapped = ^{ [weakSelf resetCropViewLayout]; };
     self.toolbar.clampButtonTapped = ^{ [weakSelf showAspectRatioDialog]; };
-    
     self.toolbar.rotateCounterclockwiseButtonTapped = ^{ [weakSelf rotateCropViewCounterclockwise]; };
     self.toolbar.rotateClockwiseButtonTapped        = ^{ [weakSelf rotateCropViewClockwise]; };
-    
-    self.toolbar.clampButtonHidden = self.aspectRatioPickerButtonHidden || circularMode;
-    self.toolbar.rotateClockwiseButtonHidden = self.rotateClockwiseButtonHidden && circularMode;
-    
-    self.transitioningDelegate = self;
-    self.view.backgroundColor = self.cropView.backgroundColor;
 }
 
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
     
+    // If we're animating onto the screen, set a flag
+    // so we can manually control the status bar fade out timing
     if (animated) {
         self.inTransition = YES;
         [self setNeedsStatusBarAppearanceUpdate];
     }
     
+    // If this controller is pushed onto a navigation stack, set flags noting the
+    // state of the navigation controller bars before we present, and then hide them
     if (self.navigationController) {
         self.navigationBarHidden = self.navigationController.navigationBarHidden;
         self.toolbarHidden = self.navigationController.toolbarHidden;
@@ -140,10 +158,15 @@ CGFloat titleLabelHeight;
         self.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     }
     else {
+        // Hide the background content when transitioning for performance
         [self.cropView setBackgroundImageViewHidden:YES animated:NO];
-        self.titleLabel.alpha = 0.0f;
+        
+        // The title label will fade
+        self.titleLabel.alpha = animated ? 0.0f : 1.0f;
     }
 
+    // If an initial aspect ratio was set before presentation, set it now once the rest of
+    // the setup will have been done
     if (self.aspectRatioPreset != TOCropViewControllerAspectRatioPresetOriginal) {
         [self setAspectRatioPreset:self.aspectRatioPreset animated:NO];
     }
@@ -152,9 +175,15 @@ CGFloat titleLabelHeight;
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
+    
+    // Disable the transition flag for the status bar
     self.inTransition = NO;
+    
+    // Re-enable translucency now that the animation has completed
     self.cropView.simpleRenderMode = NO;
 
+    // Now that the presentation animation will have finished, animate
+    // the status bar fading out, and if present, the title label fading in
     void (^updateContentBlock)(void) = ^{
         [self setNeedsStatusBarAppearanceUpdate];
         self.titleLabel.alpha = 1.0f;
@@ -167,10 +196,12 @@ CGFloat titleLabelHeight;
         updateContentBlock();
     }
     
+    // Make the grid overlay view fade in
     if (self.cropView.gridOverlayHidden) {
         [self.cropView setGridOverlayHidden:NO animated:animated];
     }
     
+    // Fade in the background view content
     if (self.navigationController == nil) {
         [self.cropView setBackgroundImageViewHidden:NO animated:animated];
     }
@@ -179,9 +210,12 @@ CGFloat titleLabelHeight;
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
+    
+    // Set the transition flag again so we can defer the status bar
     self.inTransition = YES;
     [UIView animateWithDuration:0.5f animations:^{ [self setNeedsStatusBarAppearanceUpdate]; }];
     
+    // Restore the navigation controller to its state before we were presented
     if (self.navigationController) {
         [self.navigationController setNavigationBarHidden:self.navigationBarHidden animated:animated];
         [self.navigationController setToolbarHidden:self.toolbarHidden animated:animated];
@@ -191,6 +225,8 @@ CGFloat titleLabelHeight;
 - (void)viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
+    
+    // Reset the state once the view has gone offscreen
     self.inTransition = NO;
     [self setNeedsStatusBarAppearanceUpdate];
 }
@@ -201,54 +237,52 @@ CGFloat titleLabelHeight;
     if (self.navigationController) {
         return UIStatusBarStyleLightContent;
     }
-    
+
+    // Even though we are a dark theme, leave the status bar
+    // as black so it's not obvious that it's still visible during the transition
     return UIStatusBarStyleDefault;
 }
 
 - (BOOL)prefersStatusBarHidden
 {
-    //If we belong to a UINavigationController, defer to its own status bar style
-    if (self.navigationController) {
-        return self.navigationController.prefersStatusBarHidden;
+    // Disregard the transition animation if we're not actively overriding it
+    if (!self.overrideStatusBar) {
+        return self.statusBarHidden;
     }
-    
-    //If our presenting controller has already hidden the status bar,
-    //hide the status bar by default
-    if (self.presentingViewController.prefersStatusBarHidden) {
-        return YES;
-    }
-    
-    BOOL hidden = YES;
-    hidden = hidden && !(self.inTransition);          // Not currently in a presentation animation (Where removing the status bar would break the layout)
-    hidden = hidden && !(self.view.superview == nil); // Not currently waiting to the added to a super view
-    
+
+    // Work out whether the status bar needs to be visible
+    // during a transition animation or not
+    BOOL hidden = YES; // Default is yes
+    hidden = hidden && !(self.inTransition); // Not currently in a presentation animation (Where removing the status bar would break the layout)
+    hidden = hidden && !(self.view.superview == nil); // Not currently waiting to be added to a super view
     return hidden;
 }
 
-- (CGRect)frameForToolBarWithVerticalLayout:(BOOL)verticalLayout
+- (UIRectEdge)preferredScreenEdgesDeferringSystemGestures
 {
+    return UIRectEdgeAll;
+}
+
+- (CGRect)frameForToolbarWithVerticalLayout:(BOOL)verticalLayout
+{
+    UIEdgeInsets insets = self.statusBarSafeInsets;
+
     CGRect frame = CGRectZero;
-    if (!verticalLayout) {
-        frame.origin.x = 0.0f;
+    if (!verticalLayout) { // In landscape laying out toolbar to the left
+        frame.origin.x = insets.left;
         frame.origin.y = 0.0f;
-        frame.size.width = 44.0f;
+        frame.size.width = kTOCropViewControllerToolbarHeight;
         frame.size.height = CGRectGetHeight(self.view.frame);
     }
     else {
         frame.origin.x = 0.0f;
-        
-        if (self.toolbarPosition == TOCropViewControllerToolbarPositionBottom) {
-            frame.origin.y = CGRectGetHeight(self.view.bounds) - 44.0f;
-        } else {
-            frame.origin.y = 0;
-        }
-        
         frame.size.width = CGRectGetWidth(self.view.bounds);
-        frame.size.height = 44.0f;
-        
-        // If the bar is at the top of the screen and the status bar is visible, account for the status bar height
-        if (self.toolbarPosition == TOCropViewControllerToolbarPositionTop && self.prefersStatusBarHidden == NO) {
-            frame.size.height = 64.0f;
+        frame.size.height = kTOCropViewControllerToolbarHeight;
+
+        if (self.toolbarPosition == TOCropViewControllerToolbarPositionBottom) {
+            frame.origin.y = CGRectGetHeight(self.view.bounds) - (frame.size.height + insets.bottom);
+        } else {
+            frame.origin.y = insets.top;
         }
     }
     
@@ -260,36 +294,36 @@ CGFloat titleLabelHeight;
     //On an iPad, if being presented in a modal view controller by a UINavigationController,
     //at the time we need it, the size of our view will be incorrect.
     //If this is the case, derive our view size from our parent view controller instead
-    
-    CGRect bounds = CGRectZero;
+    UIView *view = nil;
     if (self.parentViewController == nil) {
-        bounds = self.view.bounds;
+        view = self.view;
     }
     else {
-        bounds = self.parentViewController.view.bounds;
+        view = self.parentViewController.view;
     }
-	
-	
-    CGRect frame = CGRectZero;
-    if (!verticalLayout) {
-        frame.origin.x = 44.0f;
-		frame.origin.y = 0.0f;
-		
-        frame.size.width = CGRectGetWidth(bounds) - 44.0f;
-		frame.size.height = CGRectGetHeight(bounds);
-		
-    }
-    else {
-        frame.origin.x = 0.0f;
-        
-        if (_toolbarPosition == TOCropViewControllerToolbarPositionBottom) {
-			frame.origin.y = 0.0f;
-        } else {
-			frame.origin.y = 44.0f;
-        }
 
+    UIEdgeInsets insets = self.statusBarSafeInsets;
+
+    CGRect bounds = view.bounds;
+    CGRect frame = CGRectZero;
+
+    // Horizontal layout (eg landscape)
+    if (!verticalLayout) {
+        frame.origin.x = kTOCropViewControllerToolbarHeight + insets.left;
+        frame.size.width = CGRectGetWidth(bounds) - frame.origin.x;
+		frame.size.height = CGRectGetHeight(bounds);
+    }
+    else { // Vertical layout
+        frame.size.height = CGRectGetHeight(bounds);
         frame.size.width = CGRectGetWidth(bounds);
-		frame.size.height = CGRectGetHeight(bounds) - 44.0f;
+
+        // Set Y and adjust for height
+        if (self.toolbarPosition == TOCropViewControllerToolbarPositionBottom) {
+            frame.size.height -= (insets.bottom + kTOCropViewControllerToolbarHeight);
+        } else {
+			frame.origin.y = kTOCropViewControllerToolbarHeight + insets.top;
+            frame.size.height -= frame.origin.y;
+        }
     }
     
     return frame;
@@ -298,32 +332,92 @@ CGFloat titleLabelHeight;
 - (CGRect)frameForTitleLabelWithSize:(CGSize)size verticalLayout:(BOOL)verticalLayout
 {
     CGRect frame = (CGRect){CGPointZero, size};
-    CGFloat width = self.view.bounds.size.width;
+    CGFloat viewWidth = self.view.bounds.size.width;
+    CGFloat x = 0.0f; // Additional X offset in landscape mode
 
+    // Adjust for landscape layout
     if (!verticalLayout) {
-        width -= 44.0f;
+        x = kTOCropViewControllerTitleTopPadding;
+        if (@available(iOS 11.0, *)) {
+            x += self.view.safeAreaInsets.left;
+        }
+
+        viewWidth -= x;
     }
 
-    frame.origin.x = ceilf((width - frame.size.width) * 0.5f);
-    if (!verticalLayout) { frame.origin.x += 44.0f; }
+    // Work out horizontal position
+    frame.origin.x = ceilf((viewWidth - frame.size.width) * 0.5f);
+    if (!verticalLayout) { frame.origin.x += x; }
 
-    frame.origin.y = self.topLayoutGuide.length + kTOCropViewControllerTitleTopPadding;
+    // Work out vertical position
+    frame.origin.y = self.statusBarHeight + kTOCropViewControllerTitleTopPadding;
 
     return frame;
 }
 
-- (void)adjustCropViewInsetsForTitleLabel
+- (void)adjustCropViewInsets
 {
-    if (!self.titleLabel) {
-        self.cropView.cropRegionInsets = UIEdgeInsetsZero;
+    UIEdgeInsets insets = self.statusBarSafeInsets;
+
+    if (!self.titleLabel.text.length) {
+        if (self.verticalLayout) {
+            self.cropView.cropRegionInsets = UIEdgeInsetsMake(insets.top, 0.0f, 0.0, 0.0f);
+        }
+        else {
+            self.cropView.cropRegionInsets = UIEdgeInsetsMake(0.0f, 0.0f, insets.bottom, 0.0f);
+        }
+
         return;
     }
 
-    CGFloat verticalInset = 0.0f; // self.topLayoutGuide.length; // status bar //FIXME: Is this ever needed?
+    // Work out the size of the title label based on the crop view size
+    CGRect frame = self.titleLabel.frame;
+    frame.size = [self.titleLabel sizeThatFits:self.cropView.frame.size];
+    self.titleLabel.frame = frame;
+
+    // Set out the appropriate inset for that
+    CGFloat verticalInset = self.statusBarHeight;
     verticalInset += kTOCropViewControllerTitleTopPadding;
     verticalInset += self.titleLabel.frame.size.height;
+    self.cropView.cropRegionInsets = UIEdgeInsetsMake(verticalInset, 0, insets.bottom, 0);
+}
 
-    self.cropView.cropRegionInsets = UIEdgeInsetsMake(verticalInset, 0, 0, 0);
+- (void)adjustToolbarInsets
+{
+    UIEdgeInsets insets = UIEdgeInsetsZero;
+
+    if (@available(iOS 11.0, *)) {
+        // Add padding to the left in landscape mode
+        if (!self.verticalLayout) {
+            insets.left = self.view.safeAreaInsets.left;
+        }
+        else {
+            // Add padding on top if in vertical and tool bar is at the top
+            if (self.toolbarPosition == TOCropViewControllerToolbarPositionTop) {
+                insets.top = self.view.safeAreaInsets.top;
+            }
+            else { // Add padding to the bottom otherwise
+                insets.bottom = self.view.safeAreaInsets.bottom;
+            }
+        }
+    }
+    else { // iOS <= 10
+        if (!self.statusBarHidden && self.toolbarPosition == TOCropViewControllerToolbarPositionTop) {
+            insets.top = self.statusBarHeight;
+        }
+    }
+
+    // Update the toolbar with these properties
+    self.toolbar.backgroundViewOutsets = insets;
+    self.toolbar.statusBarHeightInset = self.statusBarHeight;
+    [self.toolbar setNeedsLayout];
+}
+
+- (void)viewSafeAreaInsetsDidChange
+{
+    [super viewSafeAreaInsetsDidChange];
+    [self adjustCropViewInsets];
+    [self adjustToolbarInsets];
 }
 
 - (void)viewDidLayoutSubviews
@@ -331,18 +425,22 @@ CGFloat titleLabelHeight;
     [super viewDidLayoutSubviews];
 
     self.cropView.frame = [self frameForCropViewWithVerticalLayout:self.verticalLayout];
+    [self adjustCropViewInsets];
     [self.cropView moveCroppedContentToCenterAnimated:NO];
 
+    if (self.firstTime == NO) {
+        [self.cropView performInitialSetup];
+        self.firstTime = YES;
+    }
+    
     if (self.title.length) {
-        [self.titleLabel sizeToFit];
         self.titleLabel.frame = [self frameForTitleLabelWithSize:self.titleLabel.frame.size verticalLayout:self.verticalLayout];
-        [self adjustCropViewInsetsForTitleLabel];
         [self.cropView moveCroppedContentToCenterAnimated:NO];
     }
 
     [UIView performWithoutAnimation:^{
-        self.toolbar.statusBarVisible = (self.toolbarPosition == TOCropViewControllerToolbarPositionTop && !self.prefersStatusBarHidden);
-        self.toolbar.frame = [self frameForToolBarWithVerticalLayout:self.verticalLayout];
+        self.toolbar.frame = [self frameForToolbarWithVerticalLayout:self.verticalLayout];
+        [self adjustToolbarInsets];
         [self.toolbar setNeedsLayout];
     }];
 }
@@ -357,42 +455,56 @@ CGFloat titleLabelHeight;
     self.toolbarSnapshotView = [self.toolbar snapshotViewAfterScreenUpdates:NO];
     self.toolbarSnapshotView.frame = self.toolbar.frame;
     
-    if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation))
+    if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation)) {
         self.toolbarSnapshotView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
-    else
+    }
+    else {
         self.toolbarSnapshotView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleRightMargin;
-    
+    }
     [self.view addSubview:self.toolbarSnapshotView];
-    
-    [UIView performWithoutAnimation:^{
-        self.toolbar.frame = [self frameForToolBarWithVerticalLayout:UIInterfaceOrientationIsPortrait(toInterfaceOrientation)];
-        [self.toolbar layoutIfNeeded];
-        self.toolbar.alpha = 0.0f;
-    }];
+
+    // Set up the toolbar frame to be just off t
+    CGRect frame = [self frameForToolbarWithVerticalLayout:UIInterfaceOrientationIsPortrait(toInterfaceOrientation)];
+    if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation)) {
+        frame.origin.x = -frame.size.width;
+    }
+    else {
+        frame.origin.y = self.view.bounds.size.height;
+    }
+    self.toolbar.frame = frame;
+
+    [self.toolbar layoutIfNeeded];
+    self.toolbar.alpha = 0.0f;
     
     [self.cropView prepareforRotation];
     self.cropView.frame = [self frameForCropViewWithVerticalLayout:!UIInterfaceOrientationIsPortrait(toInterfaceOrientation)];
     self.cropView.simpleRenderMode = YES;
     self.cropView.internalLayoutDisabled = YES;
-
 }
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
     //Remove all animations in the toolbar
-    self.toolbar.frame = [self frameForToolBarWithVerticalLayout:!UIInterfaceOrientationIsLandscape(toInterfaceOrientation)];
+    self.toolbar.frame = [self frameForToolbarWithVerticalLayout:!UIInterfaceOrientationIsLandscape(toInterfaceOrientation)];
     [self.toolbar.layer removeAllAnimations];
     for (CALayer *sublayer in self.toolbar.layer.sublayers) {
         [sublayer removeAllAnimations];
     }
-    
-    self.cropView.frame = [self frameForCropViewWithVerticalLayout:!UIInterfaceOrientationIsLandscape(toInterfaceOrientation)];
-    [self.cropView performRelayoutForRotation];
-    
-    [UIView animateWithDuration:duration animations:^{
-        self.toolbarSnapshotView.alpha = 0.0f;
-        self.toolbar.alpha = 1.0f;
-    }];
+
+    // On iOS 11, since these layout calls are done multiple times, if we don't aggregate from the
+    // current state, the animation breaks.
+    [UIView animateWithDuration:duration
+                          delay:0.0f
+                        options:UIViewAnimationOptionBeginFromCurrentState
+                     animations:
+    ^{
+        self.cropView.frame = [self frameForCropViewWithVerticalLayout:!UIInterfaceOrientationIsLandscape(toInterfaceOrientation)];
+        self.toolbar.frame = [self frameForToolbarWithVerticalLayout:UIInterfaceOrientationIsPortrait(toInterfaceOrientation)];
+        [self.cropView performRelayoutForRotation];
+    } completion:nil];
+
+    self.toolbarSnapshotView.alpha = 0.0f;
+    self.toolbar.alpha = 1.0f;
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
@@ -402,8 +514,6 @@ CGFloat titleLabelHeight;
     
     [self.cropView setSimpleRenderMode:NO animated:YES];
     self.cropView.internalLayoutDisabled = NO;
-	
-	self.titleLabel.frame = CGRectMake(0, 0, self.view.frame.size.width, titleLabelHeight);
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
@@ -633,7 +743,10 @@ CGFloat titleLabelHeight;
     }
     
     __weak typeof (self) weakSelf = self;
-    [viewController presentViewController:self animated:YES completion:^ {
+    [viewController presentViewController:self.parentViewController ? self.parentViewController : self
+                                 animated:YES
+                               completion:^
+    {
         typeof (self) strongSelf = weakSelf;
         if (completion) {
             completion();
@@ -677,9 +790,7 @@ CGFloat titleLabelHeight;
     self.prepareForTransitionHandler    = setup;
 
     [viewController dismissViewControllerAnimated:YES completion:^ {
-        if (completion) {
-            completion();
-        }
+        if (completion) { completion(); }
     }];
 }
 
@@ -695,14 +806,15 @@ CGFloat titleLabelHeight;
     self.transitionController.prepareForTransitionHandler = ^{
         typeof (self) strongSelf = weakSelf;
         TOCropViewControllerTransitioning *transitioning = strongSelf.transitionController;
-        
+
         transitioning.toFrame = [strongSelf.cropView convertRect:strongSelf.cropView.cropBoxFrame toView:strongSelf.view];
         if (!CGRectIsEmpty(transitioning.fromFrame) || transitioning.fromView) {
             strongSelf.cropView.croppingViewsHidden = YES;
         }
 
-        if (strongSelf.prepareForTransitionHandler)
+        if (strongSelf.prepareForTransitionHandler) {
             strongSelf.prepareForTransitionHandler();
+        }
         
         strongSelf.prepareForTransitionHandler = nil;
     };
@@ -722,13 +834,16 @@ CGFloat titleLabelHeight;
         typeof (self) strongSelf = weakSelf;
         TOCropViewControllerTransitioning *transitioning = strongSelf.transitionController;
         
-        if (!CGRectIsEmpty(transitioning.toFrame) || transitioning.toView)
+        if (!CGRectIsEmpty(transitioning.toFrame) || transitioning.toView) {
             strongSelf.cropView.croppingViewsHidden = YES;
-        else
+        }
+        else {
             strongSelf.cropView.simpleRenderMode = YES;
+        }
         
-        if (strongSelf.prepareForTransitionHandler)
+        if (strongSelf.prepareForTransitionHandler) {
             strongSelf.prepareForTransitionHandler();
+        }
     };
     
     self.transitionController.isDismissing = YES;
@@ -739,23 +854,20 @@ CGFloat titleLabelHeight;
 - (void)cancelButtonTapped
 {
     bool isDelegateOrCallbackHandled = NO;
-    
+
+    // Check if the delegate method was implemented and call if so
     if ([self.delegate respondsToSelector:@selector(cropViewController:didFinishCancelled:)]) {
         [self.delegate cropViewController:self didFinishCancelled:YES];
-        
-        if (self.onDidFinishCancelled != nil) {
-            self.onDidFinishCancelled(YES);
-        }
-        
         isDelegateOrCallbackHandled = YES;
     }
-    
+
+    // Check if the block version was implemented and call if so
     if (self.onDidFinishCancelled != nil) {
         self.onDidFinishCancelled(YES);
-        
         isDelegateOrCallbackHandled = YES;
     }
-    
+
+    // If neither callbacks were implemented, perform a default dismissing animation
     if (!isDelegateOrCallbackHandled) {
         if (self.navigationController) {
             [self.navigationController popViewControllerAnimated:YES];
@@ -778,8 +890,9 @@ CGFloat titleLabelHeight;
         TOCroppedImageAttributes *attributes = [[TOCroppedImageAttributes alloc] initWithCroppedFrame:cropFrame angle:angle originalImageSize:self.image.size];
         
         NSMutableArray *activityItems = [@[imageItem, attributes] mutableCopy];
-        if (self.activityItems)
+        if (self.activityItems) {
             [activityItems addObjectsFromArray:self.activityItems];
+        }
         
         UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:self.applicationActivities];
         activityController.excludedActivityTypes = self.excludedActivityTypes;
@@ -806,8 +919,9 @@ CGFloat titleLabelHeight;
         __weak typeof(activityController) blockController = activityController;
 #if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_8_0
         activityController.completionWithItemsHandler = ^(NSString *activityType, BOOL completed, NSArray *returnedItems, NSError *activityError) {
-            if (!completed)
+            if (!completed) {
                 return;
+            }
             
             bool isCallbackOrDelegateHandled = NO;
             
@@ -827,18 +941,20 @@ CGFloat titleLabelHeight;
         };
 #else
         activityController.completionHandler = ^(NSString *activityType, BOOL completed) {
-            if (!completed)
+            if (!completed) {
                 return;
+            }
             
-            bool isCallbackOrDelegateHandled = NO
+            BOOL isCallbackOrDelegateHandled = NO;
             
             if (self.onDidFinishCancelled != nil) {
-                self.onDidFinishCancelled(NO)
-                isCallbackOrDelegateHandled = YES
+                self.onDidFinishCancelled(NO);
+                isCallbackOrDelegateHandled = YES;
             }
+
             if ([self.delegate respondsToSelector:@selector(cropViewController:didFinishCancelled:)]) {
                 [self.delegate cropViewController:self didFinishCancelled:NO];
-                isCallbackOrDelegateHandled = YES
+                isCallbackOrDelegateHandled = YES;
             }
             
             if (!isCallbackOrDelegateHandled) {
@@ -847,7 +963,7 @@ CGFloat titleLabelHeight;
             }
         };
 #endif
-        
+
         return;
     }
     
@@ -903,10 +1019,10 @@ CGFloat titleLabelHeight;
             if (isDidCropToImageDelegateAvailable) {
                 [self.delegate cropViewController:self didCropToImage:image withRect:cropFrame angle:angle];
             }
+
             if (isDidCropToImageCallbackAvailable) {
                 self.onDidCropToRect(image, cropFrame, angle);
             }
-            
         });
         
         isCallbackOrDelegateHandled = YES;
@@ -935,11 +1051,20 @@ CGFloat titleLabelHeight;
     self.titleLabel.frame = [self frameForTitleLabelWithSize:self.titleLabel.frame.size verticalLayout:self.verticalLayout];
 }
 
+- (void)setDoneButtonTitle:(NSString *)title {
+    self.toolbar.doneTextButtonTitle = title;
+}
+
+- (void)setCancelButtonTitle:(NSString *)title {
+    self.toolbar.cancelTextButtonTitle = title;
+}
+
 - (TOCropView *)cropView {
+    // Lazily create the crop view in case we try and access it before presentation, but
+    // don't add it until our parent view controller view has loaded at the right time
     if (!_cropView) {
         _cropView = [[TOCropView alloc] initWithCroppingStyle:self.croppingStyle image:self.image];
         _cropView.delegate = self;
-        _cropView.frame = [UIScreen mainScreen].bounds;
         _cropView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [self.view addSubview:_cropView];
     }
@@ -991,32 +1116,21 @@ CGFloat titleLabelHeight;
 - (void)setRotateButtonsHidden:(BOOL)rotateButtonsHidden
 {
     self.toolbar.rotateCounterclockwiseButtonHidden = rotateButtonsHidden;
-    
-    if (self.rotateClockwiseButtonHidden == NO) {
-        self.toolbar.rotateClockwiseButtonHidden = rotateButtonsHidden;
-    }
+    self.toolbar.rotateClockwiseButtonHidden = rotateButtonsHidden;
 }
 
 - (BOOL)rotateButtonsHidden
 {
-    if (self.rotateClockwiseButtonHidden == NO) {
-        return self.toolbar.rotateCounterclockwiseButtonHidden && self.toolbar.rotateClockwiseButtonHidden;
-    }
-    
-    return self.toolbar.rotateCounterclockwiseButtonHidden;
+    return self.toolbar.rotateCounterclockwiseButtonHidden && self.toolbar.rotateClockwiseButtonHidden;
 }
 
 - (void)setRotateClockwiseButtonHidden:(BOOL)rotateClockwiseButtonHidden
 {
-    if (_rotateClockwiseButtonHidden == rotateClockwiseButtonHidden) {
-        return;
-    }
-    
-    _rotateClockwiseButtonHidden = rotateClockwiseButtonHidden;
-    
-    if (_rotateClockwiseButtonHidden == NO) {
-        self.toolbar.rotateClockwiseButtonHidden = _rotateClockwiseButtonHidden;
-    }
+    self.toolbar.rotateClockwiseButtonHidden = rotateClockwiseButtonHidden;
+}
+
+- (BOOL)rotateClockwiseButtonHidden {
+    return self.toolbar.rotateClockwiseButtonHidden;
 }
 
 - (void)setAspectRatioPickerButtonHidden:(BOOL)aspectRatioPickerButtonHidden
@@ -1071,6 +1185,77 @@ CGFloat titleLabelHeight;
 - (BOOL)verticalLayout
 {
     return CGRectGetWidth(self.view.bounds) < CGRectGetHeight(self.view.bounds);
+}
+
+- (BOOL)overrideStatusBar
+{
+    // If we're pushed from a navigation controller, we'll defer
+    // to its handling of the status bar
+    if (self.navigationController) {
+        return NO;
+    }
+    
+    // If the view controller presenting us already hid it, we don't need to
+    // do anything ourselves
+    if (self.presentingViewController.prefersStatusBarHidden) {
+        return NO;
+    }
+    
+    // We'll handle the status bar
+    return YES;
+}
+
+- (BOOL)statusBarHidden
+{
+    // Defer behavioir to the hosting navigation controller
+    if (self.navigationController) {
+        return self.navigationController.prefersStatusBarHidden;
+    }
+    
+    //If our presenting controller has already hidden the status bar,
+    //hide the status bar by default
+    if (self.presentingViewController.prefersStatusBarHidden) {
+        return YES;
+    }
+    
+    // Our default behaviour is to always hide the status bar
+    return YES;
+}
+
+- (CGFloat)statusBarHeight
+{
+    if (self.statusBarHidden) {
+        return 0.0f;
+    }
+
+    CGFloat statusBarHeight = 0.0f;
+    if (@available(iOS 11.0, *)) {
+        statusBarHeight = self.view.safeAreaInsets.top;
+    }
+    else {
+        statusBarHeight = self.topLayoutGuide.length;
+    }
+    
+    return statusBarHeight;
+}
+
+- (UIEdgeInsets)statusBarSafeInsets
+{
+    UIEdgeInsets insets = UIEdgeInsetsZero;
+    if (@available(iOS 11.0, *)) {
+        insets = self.view.safeAreaInsets;
+
+        // Since iPhone X insets are always 44, check if this is merely
+        // accounting for a non-X status bar and cancel it
+        if (insets.top <= 20.0f + FLT_EPSILON) {
+            insets.top = self.statusBarHeight;
+        }
+    }
+    else {
+        insets.top = self.statusBarHeight;
+    }
+
+    return insets;
 }
 
 @end

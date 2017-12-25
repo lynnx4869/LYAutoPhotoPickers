@@ -166,6 +166,24 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
                 return
             }
             
+            if #available(iOS 9.0, *) {
+                if photoAsset.asset.sourceType == .typeCloudShared {
+                    LYAutoAlert.show(title: "提示",
+                                     subTitle: "该图片储存于云端，请先前往相册同步到本地",
+                        check: false,
+                        viewController: self,
+                        confirm: nil,
+                        cancel: nil,
+                        sureAction: { (title) in
+                            
+                    }, cancelAction: { (title) in
+                        
+                    })
+                    
+                    return
+                }
+            }
+            
             selectPhotos.append(photoAsset)
         }
         
@@ -220,12 +238,29 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
     }
     
     internal func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
-        let cell = collectionView.cellForItem(at: indexPath) as! LYAutoPhotoSelectCell
-        
         let photoAsset = photos[indexPath.item]
+        
+        if #available(iOS 9.0, *) {
+            if photoAsset.asset.sourceType == .typeCloudShared {
+                LYAutoAlert.show(title: "提示",
+                                 subTitle: "该图片储存于云端，请先前往相册同步到本地",
+                                 check: false,
+                                 viewController: self,
+                                 confirm: nil,
+                                 cancel: nil,
+                                 sureAction: { (title) in
+                                    
+                }, cancelAction: { (title) in
+                    
+                })
+                
+                return
+            }
+        }
+        
         let array: [IDMPhoto] = [IDMPhoto(image: photoAsset.asset.getOriginAssetImage())]
         
+        let cell = collectionView.cellForItem(at: indexPath) as! LYAutoPhotoSelectCell
         let browser = IDMPhotoBrowser(photos: array, animatedFrom: cell)
         
         // Set options

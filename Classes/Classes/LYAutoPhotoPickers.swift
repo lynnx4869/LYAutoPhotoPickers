@@ -84,7 +84,10 @@ open class LYAutoPhotoPickers {
         let aec = LYAutoAuthErrorController(nibName: "LYAutoAuthErrorController", bundle: Bundle(for: LYAutoPhotoPickers.self))
         aec.type = type
         
-        return aec
+        let nav = UINavigationController(rootViewController: aec)
+        nav.navigationBar.isTranslucent = false
+        
+        return nav
     }
     
     fileprivate func getDefaultController() -> UIViewController {
