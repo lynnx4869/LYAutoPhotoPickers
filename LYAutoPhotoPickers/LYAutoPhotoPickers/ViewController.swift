@@ -50,7 +50,12 @@ class ViewController: UIViewController {
                     let image = images![0]
                     self?.displayImage.image = image.image
                 } else {
-                    print("photo picker cancel...")
+                    debugPrint("photo picker cancel...")
+                }
+            }
+            pickers.qrBlock = { (result) in
+                if result != nil {
+                    debugPrint(result!)
                 }
             }
             

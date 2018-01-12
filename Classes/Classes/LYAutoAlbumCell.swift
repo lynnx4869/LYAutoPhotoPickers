@@ -14,7 +14,6 @@ class LYAutoAlbumCell: UITableViewCell {
     @IBOutlet weak var albumTitle: UILabel!
     @IBOutlet weak var albumCount: UILabel!
     
-    
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code

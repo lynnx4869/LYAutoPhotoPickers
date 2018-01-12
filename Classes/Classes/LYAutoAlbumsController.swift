@@ -10,23 +10,21 @@ import UIKit
 import Photos
 
 class LYAutoAlbumModel {
-    
     var assetCollection: PHAssetCollection!
     
     var title: String!
     var count: Int!
     var image: UIImage!
-    
 }
 
 class LYAutoAlbumsController: LYAutoPhotoBasicController, UITableViewDelegate, UITableViewDataSource {
     
-    public var maxSelects: Int!
+    var maxSelects: Int!
     
-    var array = [LYAutoAlbumModel]()
-    var tableView: UITableView!
+    fileprivate var array = [LYAutoAlbumModel]()
+    fileprivate var tableView: UITableView!
     
-    var userLibrary: PHAssetCollection!
+    fileprivate var userLibrary: PHAssetCollection!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -75,8 +73,9 @@ class LYAutoAlbumsController: LYAutoPhotoBasicController, UITableViewDelegate, U
             })
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
-                
-                self?.gotoOneAlbum(assetCollection: (self?.userLibrary)!, animated: false)
+                if self?.userLibrary != nil {
+                    self?.gotoOneAlbum(assetCollection: (self?.userLibrary)!, animated: false)
+                }
                 
                 self?.navigationItem.title = "照片"
                 self?.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "取消", style: .done, target: self, action: #selector(self?.goBack))
@@ -92,12 +91,11 @@ class LYAutoAlbumsController: LYAutoPhotoBasicController, UITableViewDelegate, U
     }
     
     deinit {
-        print("albums view controller dealloc")
+        debugPrint("albums view controller dealloc")
     }
     
     @objc fileprivate func goBack() {
-        self.block!(false, nil)
-        
+        block(false, nil)
         navigationController?.dismiss(animated: true, completion: nil)
     }
     
@@ -116,18 +114,16 @@ class LYAutoAlbumsController: LYAutoPhotoBasicController, UITableViewDelegate, U
         let cellModel = array[indexPath.row]
         
         if cellModel.image == nil {
-            
             let assets = PHAsset.fetchAssets(in: cellModel.assetCollection, options: nil)
             let asset = assets.lastObject
             
             cellModel.title = cellModel.assetCollection.localizedTitle!
             cellModel.count = assets.count
             cellModel.image = asset?.getTumAssetImage()
-            
         }
         
         cell.albumTitle.text = cellModel.title
-        cell.albumCount.text = "(\(String(cellModel.count)))"
+        cell.albumCount.text = String(cellModel.count)
         cell.albumImage.image = cellModel.image
         
         return cell
@@ -135,7 +131,6 @@ class LYAutoAlbumsController: LYAutoPhotoBasicController, UITableViewDelegate, U
     
     internal func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let assetCollection = array[indexPath.row].assetCollection
-
         gotoOneAlbum(assetCollection: assetCollection!, animated: true)
     }
     

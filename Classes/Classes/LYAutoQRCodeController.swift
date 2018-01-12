@@ -7,20 +7,28 @@
 //
 
 import UIKit
-import Photos
+import AVFoundation
 import LYAutoUtils
 
 class LYAutoQRCodeController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
     
-    fileprivate var session = AVCaptureSession()
-    fileprivate var previewLayer: AVCaptureVideoPreviewLayer?
+    var qrBlock: LYAutoQRCallback = { _ in }
+    
+    fileprivate var session: AVCaptureSession!
+    fileprivate var output: AVCaptureMetadataOutput!
+    fileprivate var previewLayer: AVCaptureVideoPreviewLayer!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
         
+        navigationItem.title = "二维码/条形码"
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "取消", style: .done, target: self, action: #selector(goBack(_:)))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "相册", style: .done, target: self, action: #selector(scanImage(_:)))
+        
         scanQRCode()
+        initViews()
     }
 
     override func didReceiveMemoryWarning() {
@@ -28,58 +36,115 @@ class LYAutoQRCodeController: UIViewController, AVCaptureMetadataOutputObjectsDe
         // Dispose of any resources that can be recreated.
     }
     
-    fileprivate func scanQRCode() {
-        let device = AVCaptureDevice.default(for: AVMediaType.video)
-        let input = try? AVCaptureDeviceInput(device: device!)
-        if session.canAddInput(input!) {
-            session.addInput(input!)
+    deinit {
+        debugPrint("QRCode Controller Deinit ...")
+    }
+    
+    @objc fileprivate func goBack(_ sender: UIBarButtonItem) {
+        navigationController?.dismiss(animated: true, completion: nil)
+    }
+    
+    @objc fileprivate func scanImage(_ sender: UIBarButtonItem) {
+        let pickers = LYAutoPhotoPickers()
+        pickers.type = .album
+        pickers.isRateTailor = false
+        pickers.tailoringRate = 0
+        pickers.maxSelects = 1
+        pickers.block = { [weak self] (result, images) in
+            if result {
+                let detector = CIDetector(ofType: CIDetectorTypeQRCode,
+                                          context: nil,
+                                          options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
+                if let ciimage = CIImage(image: images![0].image) {
+                    if let features = detector?.features(in: ciimage) {
+                        if features.count >= 1 {
+                            let feature = features.first! as! CIQRCodeFeature
+                            if let scannedResult = feature.messageString {
+                                self?.qrBlock(scannedResult)
+                            } else {
+                                self?.qrBlock(nil)
+                            }
+                        } else {
+                            self?.qrBlock(nil)
+                        }
+                    }
+                }
+                
+                DispatchQueue.main.async {
+                    self?.navigationController?.dismiss(animated: false, completion: nil)
+                }
+            }
         }
         
-        let output = AVCaptureMetadataOutput()
+        pickers.showPhoto(in: self)
+    }
+    
+    fileprivate func scanQRCode() {
+        session = AVCaptureSession()
+        session.sessionPreset = .hd1920x1080
+
+        do {
+            if let device = AVCaptureDevice.default(for: .video) {
+                let input = try AVCaptureDeviceInput(device: device)
+                if session.canAddInput(input) {
+                    session.addInput(input)
+                }
+            }
+        } catch {
+            debugPrint(error)
+        }
+        
+        output = AVCaptureMetadataOutput()
         output.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
         if session.canAddOutput(output) {
             session.addOutput(output)
         }
-        output.metadataObjectTypes = [AVMetadataObject.ObjectType.qr]
         
-        let width = LyConsts.ScreenWidth - 60
-        
-        output.outputRectConverted(fromMetadataOutputRect: CGRect(x: 30, y: 150, width: width, height: width))
-        
-//        NotificationCenter.default.addObserver(forName: NSNotification.Name.AVCaptureInputPortFormatDescriptionDidChange,
-//            object: nil,
-//            queue: OperationQueue.current) { (noti) in
-//                output.metadataOutputRectOfInterest(for: (self.previewLayer?.metadataOutputRectOfInterest(for: CGRect(x: 30, y: 150, width: width, height: width)))!)
-//        }
+        output.metadataObjectTypes = [AVMetadataObject.ObjectType.qr,
+        AVMetadataObject.ObjectType.ean13,
+        AVMetadataObject.ObjectType.ean8,
+        AVMetadataObject.ObjectType.code128]
     
         previewLayer = AVCaptureVideoPreviewLayer(session: session)
-        previewLayer?.frame = view.bounds
-        view.layer.addSublayer(previewLayer!)
-
-        view.addSubview(getShadowBg(frame: CGRect(x: 0, y: 0, width: width+30, height: 150)))
-        view.addSubview(getShadowBg(frame: CGRect(x: width+30, y: 0, width: 30, height: width+150)))
-        view.addSubview(getShadowBg(frame: CGRect(x: 0, y: 150, width: 30, height: LyConsts.ScreenHeight-150)))
-        view.addSubview(getShadowBg(frame: CGRect(x: 30, y: 150+width, width: width+30, height: LyConsts.ScreenHeight-150-width)))
+        previewLayer.frame = view.bounds
+        previewLayer.videoGravity = .resizeAspectFill
+        view.layer.addSublayer(previewLayer)
         
         session.startRunning()
     }
     
-    fileprivate func getShadowBg(frame: CGRect) -> UIView {
-        let view = UIView(frame: frame)
-        
-        view.backgroundColor = UIColor.color(hex: 0x000000, alpha: 0.7)
-        
-        return view
+    fileprivate func initViews() {
+        if let scanView = Bundle(for: LYAutoPhotoPickers.self).loadNibNamed("LYAutoQRScanView", owner: nil, options: nil)?.first as? LYAutoQRScanView {
+            let width = LyConsts.ScreenWidth * 0.7
+            
+            scanView.center = view.center
+            scanView.bounds = CGRect(x: 0, y: 0, width: width, height: width)
+            view.addSubview(scanView)
+            
+            let path = UIBezierPath(rect: view.bounds)
+            path.append(UIBezierPath(rect: scanView.frame))
+            path.usesEvenOddFillRule = true
+            
+            let shapeLayer = CAShapeLayer()
+            shapeLayer.path = path.cgPath
+            shapeLayer.frame = view.bounds
+            shapeLayer.fillColor = UIColor.black.cgColor
+            shapeLayer.opacity = 0.6
+            shapeLayer.fillRule = kCAFillRuleEvenOdd
+            view.layer.addSublayer(shapeLayer)
+            
+            output.rectOfInterest = previewLayer.metadataOutputRectConverted(fromLayerRect: scanView.frame)
+        }
     }
     
     //MARK: - AVCaptureMetadataOutputObjectsDelegate
-    internal func metadataOutput(captureOutput: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+    func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         if metadataObjects.count > 0 {
             session.stopRunning()
             
             let object = metadataObjects.last as? AVMetadataMachineReadableCodeObject
-            
-            print(String(describing: object?.stringValue))
+            qrBlock(object?.stringValue)
+            navigationController?.dismiss(animated: true, completion: nil)
         }
     }
 

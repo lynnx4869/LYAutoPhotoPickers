@@ -12,6 +12,11 @@ import LYAutoUtils
 import TOCropViewController
 import IDMPhotoBrowser
 
+class LYAutoPhotoAsset: NSObject {
+    var asset: PHAsset!
+    var tumImage: UIImage!
+}
+
 class LYAutoPhotoHeaderView: UICollectionReusableView {
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -47,13 +52,13 @@ class LYAutoPhotoFooterView: UICollectionReusableView {
 
 class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, TOCropViewControllerDelegate, LYAutoPhotoTapDelegate {
 
-    public var maxSelects: Int!
-    public var assetCollection: PHAssetCollection!
+    var maxSelects: Int!
+    var assetCollection: PHAssetCollection!
     
-    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet fileprivate weak var collectionView: UICollectionView!
     
-    @IBOutlet weak var cutBtn: UIButton!
-    @IBOutlet weak var sureBtn: UIButton!
+    @IBOutlet fileprivate weak var cutBtn: UIButton!
+    @IBOutlet fileprivate weak var sureBtn: UIButton!
     
     fileprivate var photos = [LYAutoPhotoAsset]()
     fileprivate var selectPhotos = [LYAutoPhotoAsset]()
@@ -90,9 +95,7 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
             
             DispatchQueue.main.async {
                 self?.collectionView.reloadData()
-            }
-            
-            DispatchQueue.main.async {
+                
                 var yOffset: CGFloat = 0
                 if (self?.collectionView.contentSize.height)! > (self?.collectionView.bounds.size.height)! {
                     yOffset = (self?.collectionView.contentSize.height)! - (self?.collectionView.bounds.size.height)!
@@ -111,12 +114,11 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
     }
     
     deinit {
-        print("photos view controller dealloc")
+        debugPrint("photos view controller dealloc")
     }
     
     @objc fileprivate func goBack() {
-        self.block!(false, nil)
-        
+        block(false, nil)
         navigationController?.dismiss(animated: true, completion: nil)
     }
     
@@ -136,11 +138,10 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
     }
     
     @IBAction func sureSelectPhotos(_ sender: Any) {
-        for photoAsset in selectPhotos {
-            photoAsset.image = photoAsset.asset.getOriginAssetImage()
+        let images = selectPhotos.map {
+            LYAutoPhoto($0.asset.getOriginAssetImage(), $0.asset)
         }
-        self.block!(true, selectPhotos)
-        
+        block(true, images)
         navigationController?.dismiss(animated: true, completion: nil)
     }
     
@@ -305,8 +306,7 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
     
     internal func cropViewController(_ cropViewController: TOCropViewController, didCropToImage image: UIImage, rect cropRect: CGRect, angle: Int) {
         let photoAsset = selectPhotos.first
-        photoAsset?.image = image
-        self.block!(true, [photoAsset!])
+        block(true, [LYAutoPhoto(image, photoAsset?.asset)])
         
         cropViewController.dismiss(animated: false) { 
             self.navigationController?.dismiss(animated: true, completion: nil)

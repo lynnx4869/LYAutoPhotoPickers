@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="12120" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12088"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -25,7 +26,7 @@
                 <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="tIr-Zz-gFJ">
                     <rect key="frame" x="0.0" y="0.0" width="375" height="623"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                    <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="5" id="Px1-gU-Nh4">
+                    <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="5" id="Px1-gU-Nh4">
                         <size key="itemSize" width="50" height="50"/>
                         <size key="headerReferenceSize" width="0.0" height="0.0"/>
                         <size key="footerReferenceSize" width="0.0" height="0.0"/>
@@ -95,7 +96,7 @@
                 <constraint firstItem="pIB-6a-Szs" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="7y3-eW-3a0"/>
                 <constraint firstItem="pIB-6a-Szs" firstAttribute="top" secondItem="tIr-Zz-gFJ" secondAttribute="bottom" id="BTy-XQ-9E6"/>
                 <constraint firstItem="tIr-Zz-gFJ" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="S40-c3-PEf"/>
-                <constraint firstAttribute="bottom" secondItem="pIB-6a-Szs" secondAttribute="bottom" id="Xrc-aP-7Xu"/>
+                <constraint firstAttribute="bottomMargin" secondItem="pIB-6a-Szs" secondAttribute="bottom" id="Xrc-aP-7Xu"/>
                 <constraint firstItem="tIr-Zz-gFJ" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="aZY-KM-k8X"/>
                 <constraint firstAttribute="trailing" secondItem="tIr-Zz-gFJ" secondAttribute="trailing" id="cnb-V2-xJa"/>
                 <constraint firstAttribute="trailing" secondItem="pIB-6a-Szs" secondAttribute="trailing" id="f1f-n1-4oI"/>

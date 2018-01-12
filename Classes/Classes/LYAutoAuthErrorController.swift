@@ -10,7 +10,7 @@ import UIKit
 
 class LYAutoAuthErrorController: UIViewController {
     
-    public var type: LYAutoPhotoType = .camera
+    var type: LYAutoPhotoType = .camera
 
     @IBOutlet fileprivate weak var messageLabel: UILabel!
     @IBOutlet fileprivate weak var linkLabel: UILabel!

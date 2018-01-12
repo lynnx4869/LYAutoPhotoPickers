@@ -34,11 +34,10 @@ class LYAutoPhotoSelectCell: UICollectionViewCell {
         
         selectTagBg.isUserInteractionEnabled = true
         
-        selectTagBg.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(selectPhotoTag(tap:))))
-
+        selectTagBg.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(selectPhotoTag(_:))))
     }
     
-    @objc fileprivate func selectPhotoTag(tap: UITapGestureRecognizer) {
+    @objc fileprivate func selectPhotoTag(_ tap: UITapGestureRecognizer) {
         delegate?.tapPhoto(sender: tap.view, index: currentIndex)
     }
 

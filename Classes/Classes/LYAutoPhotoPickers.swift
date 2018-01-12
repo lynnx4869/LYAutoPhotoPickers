@@ -15,13 +15,18 @@ public enum LYAutoPhotoType {
     case qrcode
 }
 
-open class LYAutoPhotoAsset: NSObject {
-    open var asset: PHAsset!
-    open var tumImage: UIImage!
+open class LYAutoPhoto {
     open var image: UIImage!
+    open var asset: PHAsset!
+    
+    public init(_ image: UIImage!, _ asset: PHAsset!) {
+        self.image = image
+        self.asset = asset
+    }
 }
 
-public typealias LYAutoCallback = (Bool, [LYAutoPhotoAsset]?) -> Void
+public typealias LYAutoCallback = (Bool, [LYAutoPhoto]?) -> Void
+public typealias LYAutoQRCallback = (String?) -> Void
 
 open class LYAutoPhotoPickers {
     
@@ -29,8 +34,8 @@ open class LYAutoPhotoPickers {
     open var isRateTailor: Bool = false
     open var tailoringRate: Double = 0.0
     open var maxSelects: Int = 1
-    open var block: LYAutoCallback = {_,_  in }
-    open var qrBlock: ()->Void = { }
+    open var block: LYAutoCallback = { _,_  in }
+    open var qrBlock: LYAutoQRCallback = { _  in }
     
     public init() {}
     
@@ -114,7 +119,14 @@ open class LYAutoPhotoPickers {
             break
         case .qrcode:
             let qc = LYAutoQRCodeController()
-            vc = qc
+            qc.qrBlock = qrBlock
+            
+            let nav = UINavigationController(rootViewController: qc)
+            nav.navigationBar.tintColor = .white
+            nav.navigationBar.barStyle = .black
+            nav.navigationBar.setBackgroundImage(UIImage(), for: .any, barMetrics: .default)
+            nav.navigationBar.shadowImage = UIImage()
+            vc = nav
             break
         }
         

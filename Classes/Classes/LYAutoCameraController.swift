@@ -13,16 +13,16 @@ import TOCropViewController
 
 class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDelegate {
     
-    fileprivate let cameraView = UIView()
-    fileprivate let photoView = UIView()
+    fileprivate var cameraView: UIView!
+    fileprivate var photoView: UIView!
     
-    fileprivate var device: AVCaptureDevice?
-    fileprivate var input: AVCaptureDeviceInput?
+    fileprivate var device: AVCaptureDevice!
+    fileprivate var input: AVCaptureDeviceInput!
     fileprivate var imageOutput = AVCaptureStillImageOutput()
     fileprivate var session = AVCaptureSession()
-    fileprivate var previewLayer: AVCaptureVideoPreviewLayer?
+    fileprivate var previewLayer: AVCaptureVideoPreviewLayer!
     
-    fileprivate var displayImage = UIImageView()
+    fileprivate var displayImage: UIImageView!
     
     fileprivate var image: UIImage? {
         didSet {
@@ -49,10 +49,11 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        
+        cameraView = UIView()
         cameraView.backgroundColor = .white
         view.addSubview(cameraView)
         
+        photoView = UIView()
         photoView.backgroundColor = .white
         view.addSubview(photoView)
         
@@ -74,7 +75,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
     }
     
     deinit {
-        print("LY Auto Camera alloc ...")
+        debugPrint("LY Auto Camera alloc ...")
     }
     
     override var prefersStatusBarHidden: Bool {
@@ -85,12 +86,14 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
     
     fileprivate func cameraInit() {
         device = cameraOfPosition(position: .back)
-        input = try? AVCaptureDeviceInput(device: device!)
-        
-        session.sessionPreset = AVCaptureSession.Preset.hd1920x1080
-        
-        if session.canAddInput(input!) {
-            session.addInput(input!)
+        do {
+            input = try AVCaptureDeviceInput(device: device)
+            session.sessionPreset = .hd1920x1080
+            if session.canAddInput(input) {
+                session.addInput(input)
+            }
+        } catch {
+            debugPrint(error)
         }
         
         if session.canAddOutput(imageOutput) {
@@ -98,39 +101,41 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         }
         
         previewLayer = AVCaptureVideoPreviewLayer(session: session)
-        previewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
-        previewLayer?.frame = CGRect(x: 0, y: 0, width: LyConsts.ScreenWidth, height: LyConsts.ScreenHeight)
-        cameraView.layer.addSublayer(previewLayer!)
+        previewLayer.videoGravity = .resizeAspectFill
+        previewLayer.frame = CGRect(x: 0, y: 0, width: LyConsts.ScreenWidth, height: LyConsts.ScreenHeight)
+        cameraView.layer.addSublayer(previewLayer)
         
         session.startRunning()
         
-        if ((try? device?.lockForConfiguration()) != nil) {
-            if (device?.isFlashModeSupported(.off))! {
-                device?.flashMode = .off
+        do {
+            try device.lockForConfiguration()
+            
+            if device.isFlashModeSupported(.auto) {
+                device.flashMode = .auto
             }
             
-            if (device?.isWhiteBalanceModeSupported(.autoWhiteBalance))! {
-                device?.whiteBalanceMode = .autoWhiteBalance
+            if device.isWhiteBalanceModeSupported(.autoWhiteBalance) {
+                device.whiteBalanceMode = .autoWhiteBalance
             }
             
-            device?.unlockForConfiguration()
+            device.unlockForConfiguration()
+        } catch {
+            debugPrint(error)
         }
-        
     }
     
     fileprivate func initCameraBtns() {
-        
         let touchView = UIView()
         touchView.backgroundColor = .clear
         cameraView.addSubview(touchView)
         
-        touchView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(pinchImage(pinch:))))
+        touchView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(pinchImage(_:))))
         
         touchView.edge(to: cameraView, padding: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0))
         
         let closeBtn = UIButton(type: .custom)
         closeBtn.setImage(UIImage(named: "ly_cross", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
-        closeBtn.addTarget(self, action: #selector(closeCamera(btn:)), for: .touchUpInside)
+        closeBtn.addTarget(self, action: #selector(closeCamera(_:)), for: .touchUpInside)
         cameraView.addSubview(closeBtn)
         
         closeBtn.top(to: cameraView, attribute: .top, constant: 15)
@@ -140,7 +145,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
 
         let takePhotoBtn = UIButton(type: .custom)
         takePhotoBtn.setImage(UIImage(named: "ly_round", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
-        takePhotoBtn.addTarget(self, action: #selector(takePhoto(btn:)), for: .touchUpInside)
+        takePhotoBtn.addTarget(self, action: #selector(takePhoto(_:)), for: .touchUpInside)
         cameraView.addSubview(takePhotoBtn)
         
         takePhotoBtn.bottom(to: cameraView, attribute: .bottom, constant: -10)
@@ -149,8 +154,8 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         takePhotoBtn.height(to: cameraView, constant: 100)
         
         let flashChangeBtn = UIButton(type: .custom)
-        flashChangeBtn.setImage(UIImage(named: "ly_flash-off", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
-        flashChangeBtn.addTarget(self, action: #selector(changeFlash(btn:)), for: .touchUpInside)
+        flashChangeBtn.setImage(UIImage(named: "ly_flash-auto", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
+        flashChangeBtn.addTarget(self, action: #selector(changeFlash(_:)), for: .touchUpInside)
         cameraView.addSubview(flashChangeBtn)
         
         flashChangeBtn.top(to: cameraView, attribute: .top, constant: 15)
@@ -160,7 +165,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         
         let cameraChangeBtn = UIButton(type: .custom)
         cameraChangeBtn.setImage(UIImage(named: "ly_camera-front-on", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
-        cameraChangeBtn.addTarget(self, action: #selector(changeCamera(btn:)), for: .touchUpInside)
+        cameraChangeBtn.addTarget(self, action: #selector(changeCamera(_:)), for: .touchUpInside)
         cameraView.addSubview(cameraChangeBtn)
         
         cameraChangeBtn.top(to: cameraView, attribute: .top, constant: 15)
@@ -170,6 +175,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
     }
     
     fileprivate func initDisplayImage() {
+        displayImage = UIImageView()
         photoView.addSubview(displayImage)
         
         let padding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
@@ -177,7 +183,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
 
         let takePhotoAgainBtn = UIButton(type: .custom)
         takePhotoAgainBtn.setTitle("重拍", for: .normal)
-        takePhotoAgainBtn.addTarget(self, action: #selector(takePhotoAgain(btn:)), for: .touchUpInside)
+        takePhotoAgainBtn.addTarget(self, action: #selector(takePhotoAgain(_:)), for: .touchUpInside)
         photoView.addSubview(takePhotoAgainBtn)
         
         takePhotoAgainBtn.top(to: photoView, attribute: .top, constant: 15)
@@ -187,7 +193,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         
         let cutBtn = UIButton()
         cutBtn.setImage(UIImage(named: "ly_cut", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
-        cutBtn.addTarget(self, action: #selector(cutPhoto(btn:)), for: .touchUpInside)
+        cutBtn.addTarget(self, action: #selector(cutPhoto(_:)), for: .touchUpInside)
         photoView.addSubview(cutBtn)
         
         cutBtn.bottom(to: photoView, attribute: .bottom, constant: -10)
@@ -197,7 +203,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         
         let sureBtn = UIButton()
         sureBtn.setImage(UIImage(named: "ly_sure", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
-        sureBtn.addTarget(self, action: #selector(surePhoto(btn:)), for: .touchUpInside)
+        sureBtn.addTarget(self, action: #selector(surePhoto(_:)), for: .touchUpInside)
         photoView.addSubview(sureBtn)
         
         sureBtn.bottom(to: photoView, attribute: .bottom, constant: -10)
@@ -217,97 +223,108 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         return nil
     }
     
-    @objc fileprivate func closeCamera(btn: UIButton) {
-        block!(false, nil)
-        
+    @objc fileprivate func closeCamera(_ btn: UIButton) {
+        block(false, nil)
         dismiss(animated: true, completion: nil)
     }
     
-    @objc fileprivate func changeCamera(btn: UIButton) {
-        let cameraCount = AVCaptureDevice.devices(for: AVMediaType.video).count
-        
+    @objc fileprivate func changeCamera(_ btn: UIButton) {
+        let cameraCount = AVCaptureDevice.devices(for: .video).count
         if cameraCount > 1 {
-            var newDevice: AVCaptureDevice?
-            
-            let position = input?.device.position
-            if position == .front {
+            var newDevice: AVCaptureDevice!
+            if input.device.position == .front {
                 newDevice = cameraOfPosition(position: .back)
             } else {
                 newDevice = cameraOfPosition(position: .front)
             }
             
-            let newInput = try? AVCaptureDeviceInput(device: newDevice!)
-            if newInput != nil {
+            do {
+                let newInput = try AVCaptureDeviceInput(device: newDevice)
                 session.beginConfiguration()
-                session.removeInput(input!)
-                if session.canAddInput(newInput!) {
-                    session.addInput(newInput!)
+                session.removeInput(input)
+                if session.canAddInput(newInput) {
+                    session.addInput(newInput)
                     input = newInput
                 } else {
-                    session.addInput(input!)
+                    session.addInput(input)
                 }
                 session.commitConfiguration()
+            } catch {
+                debugPrint(error)
             }
         }
     }
     
-    @objc fileprivate func changeFlash(btn: UIButton) {
-        if device?.flashMode == .on {
-            btn.setImage(UIImage(named: "ly_flash-off", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
+    @objc fileprivate func changeFlash(_ btn: UIButton) {
+        do {
+            var newImageName: String!
+            var newFlashMode: AVCaptureDevice.FlashMode!
             
-            if (try? device?.lockForConfiguration()) != nil {
-                device?.flashMode = .off
-                device?.unlockForConfiguration()
-            }
-        } else {
-            btn.setImage(UIImage(named: "ly_flash", in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil), for: .normal)
-            
-            if (try? device?.lockForConfiguration()) != nil {
-                device?.flashMode = .on
-                device?.unlockForConfiguration()
-            }
-        }
-    }
-    
-    var initialPinchZoom: CGFloat = 0
-    
-    @objc fileprivate func pinchImage(pinch: UIPinchGestureRecognizer) {
-        if pinch.state == .began {
-            try? device?.lockForConfiguration()
-            initialPinchZoom = (device?.videoZoomFactor)!
-        }
-        
-        if pinch.state == .changed {
-            device?.videoZoomFactor = pinch.scale / pinch.scale
-            var zoomFactor: CGFloat = 0
-            let scale = pinch.scale
-            if scale < 1.0 {
-                zoomFactor = initialPinchZoom - CGFloat(pow(Double((device?.activeFormat.videoMaxZoomFactor)!), Double(1.0-scale)))
+            if device.flashMode == .auto {
+                newImageName = "ly_flash-on"
+                newFlashMode = .on
+            } else if device.flashMode == .on {
+                newImageName = "ly_flash-off"
+                newFlashMode = .off
             } else {
-                zoomFactor = initialPinchZoom + CGFloat(pow(Double((device?.activeFormat.videoMaxZoomFactor)!), Double((scale-1.0)/2.0)))
+                newImageName = "ly_flash-auto"
+                newFlashMode = .auto
             }
             
-            zoomFactor = min(10.0, zoomFactor)
-            zoomFactor = max(1.0, zoomFactor)
+            btn.setImage(UIImage(named: newImageName,
+                                 in: Bundle(for: LYAutoPhotoPickers.self), compatibleWith: nil),
+                         for: .normal)
             
-            device?.videoZoomFactor = zoomFactor
-        }
-        
-        if pinch.state == .ended || pinch.state == .cancelled {
-            device?.unlockForConfiguration()
+            try device.lockForConfiguration()
+            device.flashMode = newFlashMode
+            device.unlockForConfiguration()
+        } catch {
+            debugPrint(error)
         }
     }
     
-    @objc fileprivate func takePhoto(btn: UIButton) {
+    fileprivate var initialPinchZoom: CGFloat = 0
+    
+    @objc fileprivate func pinchImage(_ pinch: UIPinchGestureRecognizer) {
+        do {
+            if pinch.state == .began {
+                try device.lockForConfiguration()
+                initialPinchZoom = device.videoZoomFactor
+            }
+            
+            if pinch.state == .changed {
+//                device.videoZoomFactor = pinch.scale / pinch.scale
+                var zoomFactor: CGFloat = 0
+                let scale = pinch.scale
+                if scale < 1.0 {
+                    zoomFactor = initialPinchZoom - pow(device.activeFormat.videoMaxZoomFactor, 1.0-scale)
+                } else {
+                    zoomFactor = initialPinchZoom + pow(device.activeFormat.videoMaxZoomFactor, (scale-1.0)/2.0)
+                }
+                zoomFactor = min(10.0, zoomFactor)
+                zoomFactor = max(1.0, zoomFactor)
+                device.videoZoomFactor = zoomFactor
+            }
+            
+            if pinch.state == .ended || pinch.state == .cancelled {
+                device.unlockForConfiguration()
+            }
+        } catch {
+            debugPrint(error)
+        }
+    }
+    
+    @objc fileprivate func takePhoto(_ btn: UIButton) {
         let connect = imageOutput.connection(with: AVMediaType.video)
         if connect == nil {
-            print("take photo error ...")
+            debugPrint("take photo error ...")
             return
         } else {
             imageOutput.captureStillImageAsynchronously(from: connect!,
                                                         completionHandler:
             { [weak self] (imageDataSampleBuffer, error) in
                 if imageDataSampleBuffer == nil {
+                    debugPrint("take photo error ...")
                     return
                 }
                 
@@ -319,11 +336,11 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         }
     }
     
-    @objc fileprivate func takePhotoAgain(btn: UIButton) {
+    @objc fileprivate func takePhotoAgain(_ btn: UIButton) {
         image = nil
     }
     
-    @objc fileprivate func cutPhoto(btn: UIButton) {
+    @objc fileprivate func cutPhoto(_ btn: UIButton) {
         let tcvc = TOCropViewController(image: image!)
         tcvc.delegate = self
         tcvc.rotateClockwiseButtonHidden = false
@@ -339,11 +356,8 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
                 completion: nil)
     }
     
-    @objc fileprivate func surePhoto(btn: UIButton) {
-        let photoAsset = LYAutoPhotoAsset()
-        photoAsset.image = image
-        block!(true, [photoAsset])
-        
+    @objc fileprivate func surePhoto(_ btn: UIButton) {
+        block(true, [LYAutoPhoto(image, nil)])
         dismiss(animated: true, completion: nil)
     }
     
@@ -354,11 +368,8 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
     
     func cropViewController(_ cropViewController: TOCropViewController, didCropToImage image: UIImage, rect cropRect: CGRect, angle: Int) {
         self.image = nil
-        
-        let photoAsset = LYAutoPhotoAsset()
-        photoAsset.image = image
-        block!(true, [photoAsset])
- 
+        block(true, [LYAutoPhoto(image, nil)])
+
         cropViewController.dismiss(animated: false) { 
             [weak self] in
             self?.dismiss(animated: true, completion: nil)
