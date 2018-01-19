@@ -1,7 +1,7 @@
 //
 //  TOCropViewController.m
 //
-//  Copyright 2015-2017 Timothy Oliver. All rights reserved.
+//  Copyright 2015-2018 Timothy Oliver. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to
@@ -350,7 +350,12 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
     if (!verticalLayout) { frame.origin.x += x; }
 
     // Work out vertical position
-    frame.origin.y = self.statusBarHeight + kTOCropViewControllerTitleTopPadding;
+    if (@available(iOS 11.0, *)) {
+        frame.origin.y = self.view.safeAreaInsets.top + kTOCropViewControllerTitleTopPadding;
+    }
+    else {
+        frame.origin.y = self.statusBarHeight + kTOCropViewControllerTitleTopPadding;
+    }
 
     return frame;
 }
@@ -678,10 +683,15 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
             break;
     }
     
+    // If the aspect ratio lock is not enabled, allow a swap
+    // If the aspect ratio lock is on, allow a aspect ratio swap
+    // only if the allowDimensionSwap option is specified.
+    BOOL aspectRatioCanSwapDimensions = !self.aspectRatioLockEnabled ||
+                                (self.aspectRatioLockEnabled && self.aspectRatioLockDimensionSwapEnabled);
+    
     //If the image is a portrait shape, flip the aspect ratio to match
-    if (aspectRatioPreset != TOCropViewControllerAspectRatioPresetCustom &&
-        self.cropView.cropBoxAspectRatioIsPortrait &&
-        !self.aspectRatioLockEnabled)
+    if (self.cropView.cropBoxAspectRatioIsPortrait &&
+        aspectRatioCanSwapDimensions)
     {
         CGFloat width = aspectRatio.width;
         aspectRatio.width = aspectRatio.height;
@@ -1085,7 +1095,7 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
     if (_titleLabel) { return _titleLabel; }
 
     _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-    _titleLabel.font = [UIFont boldSystemFontOfSize:15.0f];
+    _titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
     _titleLabel.backgroundColor = [UIColor clearColor];
     _titleLabel.textColor = [UIColor whiteColor];
     _titleLabel.numberOfLines = 1;

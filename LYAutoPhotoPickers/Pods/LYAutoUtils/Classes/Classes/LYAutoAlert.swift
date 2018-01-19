@@ -8,6 +8,8 @@
 
 import UIKit
 
+public typealias LYAutoTitleCallback = (String) -> Void
+
 public struct LYAutoAlert {
     
     static public func show(title: String,
@@ -16,8 +18,8 @@ public struct LYAutoAlert {
                      viewController: UIViewController,
                      confirm: String?,
                      cancel: String?,
-                     sureAction: @escaping ((_ title: String)->Void),
-                     cancelAction: @escaping ((_ title: String)->Void)) {
+                     sureAction: @escaping LYAutoTitleCallback,
+                     cancelAction: @escaping LYAutoTitleCallback) {
         
         var confirmTitle = ""
         var cancelTitle = ""
@@ -67,7 +69,7 @@ public struct LYAutoAlert {
     static public func show(title: String,
                      btns: [String],
                      viewController: UIViewController,
-                     btnClick: @escaping ((_ title: String)->Void)) {
+                     btnClick: @escaping LYAutoTitleCallback) {
         
         let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         

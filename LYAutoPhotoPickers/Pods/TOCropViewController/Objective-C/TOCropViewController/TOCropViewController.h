@@ -1,7 +1,7 @@
 //
 //  TOCropViewController.h
 //
-//  Copyright 2015-2017 Timothy Oliver. All rights reserved.
+//  Copyright 2015-2018 Timothy Oliver. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to
@@ -174,6 +174,13 @@ typedef NS_ENUM(NSInteger, TOCropViewControllerToolbarPosition) {
  Setting this will override the Default which is a localized string for "Cancel".
  */
 @property (nullable, nonatomic, copy) NSString *cancelButtonTitle;
+
+/**
+ If true, a custom aspect ratio is set, and the aspectRatioLockEnabled is set to YES, the crop box will swap it's dimensions depending on portrait or landscape sized images.
+ 
+ Default is NO.
+ */
+@property (nonatomic, assign) BOOL aspectRatioLockDimensionSwapEnabled;
 
 /**
  If true, while it can still be resized, the crop box will be locked to its current aspect ratio.
