@@ -10,7 +10,7 @@ import UIKit
 import Photos
 import LYAutoUtils
 import TOCropViewController
-import IDMPhotoBrowser
+import JXPhotoBrowser
 
 class LYAutoPhotoAsset: NSObject {
     var asset: PHAsset!
@@ -50,7 +50,7 @@ class LYAutoPhotoFooterView: UICollectionReusableView {
     }
 }
 
-class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, TOCropViewControllerDelegate, LYAutoPhotoTapDelegate {
+class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, TOCropViewControllerDelegate, LYAutoPhotoTapDelegate, PhotoBrowserDelegate {
 
     var maxSelects: Int!
     var assetCollection: PHAssetCollection!
@@ -259,19 +259,8 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
             }
         }
         
-        let array: [IDMPhoto] = [IDMPhoto(image: photoAsset.asset.getOriginAssetImage())]
-        
-        let cell = collectionView.cellForItem(at: indexPath) as! LYAutoPhotoSelectCell
-        let browser = IDMPhotoBrowser(photos: array, animatedFrom: cell)
-        
-        // Set options
-        browser?.displayActionButton = false
-        browser?.displayArrowButton = false
-        browser?.displayDoneButton = false
-        browser?.autoHideInterface = false
-        browser?.displayCounterLabel = true
-        browser?.dismissOnTouch = true
-        present(browser!, animated: true, completion: nil)
+        let browser = PhotoBrowser(showByViewController: self, delegate: self)
+        browser.show(index: indexPath.item)
     }
     
     internal func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
@@ -311,6 +300,25 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
         cropViewController.dismiss(animated: false) { 
             self.navigationController?.dismiss(animated: true, completion: nil)
         }
+    }
+    
+    //MARK: - PhotoBrowserDelegate
+    func numberOfPhotos(in photoBrowser: PhotoBrowser) -> Int {
+        return photos.count
+    }
+    
+    func photoBrowser(_ photoBrowser: PhotoBrowser, thumbnailViewForIndex index: Int) -> UIView? {
+        return collectionView.cellForItem(at: IndexPath(item: index, section: 0))
+    }
+    
+    func photoBrowser(_ photoBrowser: PhotoBrowser, thumbnailImageForIndex index: Int) -> UIImage? {
+        let cell = collectionView.cellForItem(at: IndexPath(item: index, section: 0)) as? LYAutoPhotoSelectCell
+        return cell?.tumImage.image
+    }
+    
+    func photoBrowser(_ photoBrowser: PhotoBrowser, rawUrlForIndex index: Int) -> URL? {
+        let photoAsset = photos[index]
+        return photoAsset.asset.getAssetUrl()
     }
     
 }
