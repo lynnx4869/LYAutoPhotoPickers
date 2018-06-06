@@ -7,120 +7,82 @@
 //
 
 import UIKit
-import Kingfisher
 
-// MARK: - PhotoBrowserDelegate
-public protocol PhotoBrowserDelegate: class {
-    /// 实现本方法以返回图片数量
-    func numberOfPhotos(in photoBrowser: PhotoBrowser) -> Int
-    
-    /// 实现本方法以返回默认图片，缩略图或占位图
-    func photoBrowser(_ photoBrowser: PhotoBrowser, thumbnailImageForIndex index: Int) -> UIImage?
-    
-    /// 实现本方法以返回默认图所在view，在转场动画完成后将会修改这个view的hidden属性
-    /// 比如你可返回ImageView，或整个Cell
-    func photoBrowser(_ photoBrowser: PhotoBrowser, thumbnailViewForIndex index: Int) -> UIView?
-    
-    /// 实现本方法以返回高质量图片的url。可选
-    func photoBrowser(_ photoBrowser: PhotoBrowser, highQualityUrlForIndex index: Int) -> URL?
-    
-    /// 实现本方法以返回原图url。可选
-    func photoBrowser(_ photoBrowser: PhotoBrowser, rawUrlForIndex index: Int) -> URL?
-    
-    /// 长按时回调。可选
-    func photoBrowser(_ photoBrowser: PhotoBrowser, didLongPressForIndex index: Int, image: UIImage)
-}
+open class PhotoBrowser: UIViewController {
 
-/// PhotoBrowserDelegate适配器
-public extension PhotoBrowserDelegate {
-    func photoBrowser(_ photoBrowser: PhotoBrowser, highQualityUrlForIndex index: Int) -> URL? {
-        return nil
-    }
-    
-    func photoBrowser(_ photoBrowser: PhotoBrowser, rawUrlForIndex index: Int) -> URL? {
-        return nil
-    }
-    
-    func photoBrowser(_ photoBrowser: PhotoBrowser, didLongPressForIndex index: Int, image: UIImage) {}
-    
-    func pageControlOfPhotoBrowser<T: UIView>(_ photoBrowser: PhotoBrowser) -> T? {
-        return nil
-    }
-}
+    //
+    // MARK: - Public Properties
+    //
 
-// MARK: - PhotoBrowserPageControl
-public protocol PhotoBrowserPageControlDelegate: class {
-    
-    /// 总图片数/页数
-    var numberOfPages: Int { get set }
-    
-    /// 取PageControl，只会取一次
-    func pageControlOfPhotoBrowser(_ photoBrowser: PhotoBrowser) -> UIView
-    
-    /// 添加到父视图上时调用
-    func photoBrowserPageControl(_ pageControl: UIView, didMoveTo superView: UIView)
-    
-    /// 让pageControl布局时调用
-    func photoBrowserPageControl(_ pageControl: UIView, needLayoutIn superView: UIView)
-    
-    /// 页码变更时调用
-    func photoBrowserPageControl(_ pageControl: UIView, didChangedCurrentPage currentPage: Int)
-}
-
-// MARK: - PhotoBrowser
-
-public class PhotoBrowser: UIViewController {
-    
-    // MARK: -  公开属性
     /// 实现了PhotoBrowserDelegate协议的对象
-    public weak var photoBrowserDelegate: PhotoBrowserDelegate?
-    
-    /// 实现了PhotoBrowserPageControlDelegate协议的对象
-    public var pageControlDelegate: PhotoBrowserPageControlDelegate?
-    
+    open weak var photoBrowserDelegate: PhotoBrowserDelegate?
+
+    /// 图片加载器
+    open var photoLoader: PhotoLoader
+
     /// 左右两张图之间的间隙
-    public var photoSpacing: CGFloat = 30
-    
+    open var photoSpacing: CGFloat = 30
+
     /// 图片缩放模式
-    public var imageScaleMode = UIViewContentMode.scaleAspectFill
-    
+    open var imageScaleMode = UIViewContentMode.scaleAspectFill
+
     /// 捏合手势放大图片时的最大允许比例
-    public var imageMaximumZoomScale: CGFloat = 2.0
-    
+    open var imageMaximumZoomScale: CGFloat = 2.0
+
     /// 双击放大图片时的目标比例
-    public var imageZoomScaleForDoubleTap: CGFloat = 2.0
-    
-    // MARK: -  内部属性
+    open var imageZoomScaleForDoubleTap: CGFloat = 2.0
+
+    /// 转场动画类型
+    open var animationType: AnimationType = .scale
+
+    /// 打开时的初始页码，第一页为 0.
+    open var originPageIndex: Int = 0
+
+    /// 本地图片组
+    /// 优先级高于代理方法`func photoBrowser(_:, localImageForIndex:) -> UIImage?`
+    open var localImages: [UIImage]?
+
+    /// 插件组
+    open var plugins: [PhotoBrowserPlugin] = []
+
+    /// Cell 插件组
+    /// 初始化默认使用`图片加载进度插件`和`查看原图插件`
+    open var cellPlugins: [PhotoBrowserCellPlugin] = []
+
+    //
+    // MARK: - Private Properties
+    //
+
     /// 当前显示的图片序号，从0开始
     private var currentIndex = 0 {
         didSet {
-            animatorCoordinator?.updateCurrentHiddenView(relatedView)
-            guard let dlg = pageControlDelegate, let pageControl = self.pageControl else {
-                return
+            if animationType == .scale {
+                scalePresentationController?.updateCurrentHiddenView(relatedView)
             }
-            dlg.photoBrowserPageControl(pageControl, didChangedCurrentPage: currentIndex)
+            plugins.forEach {
+                $0.photoBrowser(self, didChangedPageIndex: currentIndex)
+            }
         }
     }
-    
+
     /// 当前正在显示视图的前一个页面关联视图
     private var relatedView: UIView? {
         return photoBrowserDelegate?.photoBrowser(self, thumbnailViewForIndex: currentIndex)
     }
-    
+
     /// 转场协调器
-    private weak var animatorCoordinator: ScaleAnimatorCoordinator?
-    
-    /// presentation转场动画
-    private weak var presentationAnimator: ScaleAnimator?
-    
-    /// 本VC的presentingViewController
-    private let presentingVC: UIViewController
-    
+    private weak var fadePresentationController: PhotoBrowserPresentationController?
+
+    /// 缩放型转场协调器
+    private weak var scalePresentationController: ScalePresentationController?
+
     /// 容器layout
-    private lazy var flowLayout: PhotoBrowserLayout = {
-        return PhotoBrowserLayout()
+    private lazy var flowLayout: UICollectionViewFlowLayout = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        return layout
     }()
-    
+
     /// 容器
     private lazy var collectionView: UICollectionView = { [unowned self] in
         let collectionView = UICollectionView(frame: CGRect.zero, collectionViewLayout: flowLayout)
@@ -130,178 +92,346 @@ public class PhotoBrowser: UIViewController {
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.dataSource = self
         collectionView.delegate = self
-        collectionView.register(PhotoBrowserCell.self, forCellWithReuseIdentifier: NSStringFromClass(PhotoBrowserCell.self))
+        collectionView.registerCell(PhotoBrowserCell.self)
+        collectionView.isPagingEnabled = true
+        collectionView.alwaysBounceVertical = false
         return collectionView
     }()
-    
-    /// PageControl
-    private lazy var pageControl: UIView? = { [unowned self] in
-        return self.pageControlDelegate?.pageControlOfPhotoBrowser(self)
-    }()
-    
+
     /// 保存原windowLevel
-    private var originWindowLevel: UIWindowLevel!
-    
-    // MARK: - 公开方法
-    /// 初始化，传入用于present出本VC的VC，以及实现了PhotoBrowserDelegate协议的对象
-    public init(showByViewController presentingVC: UIViewController, delegate: PhotoBrowserDelegate) {
-        self.presentingVC = presentingVC
-        self.photoBrowserDelegate = delegate
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    public required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
+    private lazy var originWindowLevel: UIWindowLevel? = { [weak self] in
+        let window = self?.view.window ?? UIApplication.shared.keyWindow
+        return window?.windowLevel
+    }()
+
+    //
+    // MARK: - Initialize
+    //
+
+    #if DEBUG
+    /// 销毁
     deinit {
-        #if DEBUG
-            print("deinit:\(self)")
-        #endif
+        print("deinit:\(self)")
     }
-    
-    /// 展示，传入图片序号，从0开始
-    public func show(index: Int) {
-        currentIndex = index
+    #endif
+
+    /// 初始化
+    /// - parameter animationType: 转场动画类型，默认为缩放动画`scale`
+    /// - parameter delegate: 浏览器协议代理
+    /// - parameter photoLoader: 网络图片加载器，默认 KingfisherPhotoLoader
+    /// - parameter originPageIndex: 打开时的初始页码，第一页为 0.
+    public init(animationType: AnimationType = .scale,
+                delegate: PhotoBrowserDelegate? = nil,
+                photoLoader: PhotoLoader = KingfisherPhotoLoader(),
+                originPageIndex: Int = 0) {
+        self.photoLoader = photoLoader
+        super.init(nibName: nil, bundle: nil)
         self.transitioningDelegate = self
         self.modalPresentationStyle = .custom
         self.modalPresentationCapturesStatusBarAppearance = true
-        presentingVC.present(self, animated: true, completion: nil)
+
+        self.animationType = animationType
+        self.photoBrowserDelegate = delegate
+        self.originPageIndex = originPageIndex
+        // 默认使用`图片加载进度插件`和`查看原图插件`
+        self.cellPlugins = [ProgressViewPlugin(), RawImageButtonPlugin()]
     }
-    
-    /// 便利的展示方法，合并init和show两个步骤
-    public class func show(byViewController presentingVC: UIViewController, delegate: PhotoBrowserDelegate, index: Int) {
-        let vc = PhotoBrowser(showByViewController: presentingVC, delegate: delegate)
-        vc.show(index: index)
+
+    public required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
-    
-    // MARK: - 内部方法
-    public override func viewDidLoad() {
+
+    //
+    // MARK: - Public Methods
+    //
+
+    /// 展示图片浏览器
+    /// - parameter presentingVC: 由谁 present 出图片浏览器
+    open func show(from viewController: UIViewController? = TopMostViewControllerGetter.topMost) {
+        viewController?.present(self, animated: true, completion: nil)
+    }
+
+    /// 关闭浏览器
+    /// 不会触发`浏览器即将关闭/浏览器已经关闭`回调
+    /// - parameter animated: 是否需要关闭转场动画
+    open func dismiss(animated: Bool) {
+        coverStatusBar(false)
+        dismiss(animated: animated, completion: nil)
+    }
+
+    /// 展示，传入完整参数
+    /// - parameter animationType: 转场动画类型，默认为缩放动画`scale`
+    /// - parameter delegate: 浏览器协议代理
+    /// - parameter photoLoader: 网络图片加载器，默认 KingfisherPhotoLoader
+    /// - parameter plugins: 插件组，默认加载一个光点型页码指示器
+    /// - parameter originPageIndex: 打开时的初始页码，第一页为 0.
+    /// - parameter fromViewController: 基于哪个 ViewController 执行 present。默认视图顶层VC。
+    /// - returns:  所创建的图片浏览器
+    @discardableResult
+    open class func show(animationType: AnimationType = .scale,
+                         delegate: PhotoBrowserDelegate,
+                         photoLoader: PhotoLoader = KingfisherPhotoLoader(),
+                         plugins: [PhotoBrowserPlugin] = [DefaultPageControlPlugin()],
+                         originPageIndex: Int,
+                         fromViewController: UIViewController? = TopMostViewControllerGetter.topMost
+        ) -> PhotoBrowser {
+        let vc = PhotoBrowser(animationType: animationType,
+                              delegate: delegate,
+                              photoLoader: photoLoader,
+                              originPageIndex: originPageIndex)
+        vc.plugins = plugins
+        vc.show(from: fromViewController)
+        return vc
+    }
+
+    /// 展示本地图片
+    /// - parameter localImages: 本地图片组
+    /// - parameter animationType: 转场动画类型，默认为缩放动画`fade`
+    /// - parameter delegate: 浏览器协议代理
+    /// - parameter plugins: 插件组，默认加载一个光点型页码指示器
+    /// - parameter originPageIndex: 打开时的初始页码，第一页为 0.
+    /// - parameter fromViewController: 基于哪个 ViewController 执行 present。默认视图顶层VC。
+    /// - returns:  所创建的图片浏览器
+    @discardableResult
+    open class func show(localImages: [UIImage],
+                         animationType: AnimationType = .fade,
+                         delegate: PhotoBrowserDelegate? = nil,
+                         photoLoader: PhotoLoader = KingfisherPhotoLoader(),
+                         plugins: [PhotoBrowserPlugin] = [DefaultPageControlPlugin()],
+                         originPageIndex: Int,
+                         fromViewController: UIViewController? = TopMostViewControllerGetter.topMost
+        ) -> PhotoBrowser {
+        let vc = PhotoBrowser(animationType: animationType,
+                              delegate: delegate,
+                              photoLoader: photoLoader,
+                              originPageIndex: originPageIndex)
+        vc.localImages = localImages
+        vc.plugins = plugins
+        vc.show(from: fromViewController)
+        return vc
+    }
+
+    /// 重新加载数据源
+    open func reloadData() {
+        collectionView.reloadData()
+        checkAndRefreshCurrentIndex()
+    }
+
+    /// 删除某项
+    open func deleteItem(at index: Int) {
+        collectionView.deleteItems(at: [IndexPath(row: index, section: 0)])
+        checkAndRefreshCurrentIndex()
+    }
+
+    /// 检查 numberOfItems，更新 currentIndex
+    private func checkAndRefreshCurrentIndex() {
+        let numberOfItems = collectionView.numberOfItems(inSection: 0)
+        if currentIndex > (numberOfItems - 1) {
+            currentIndex = numberOfItems - 1
+        }
+        if numberOfItems == 0 {
+            dismiss(animated: true)
+        }
+    }
+
+    //
+    // MARK: - Life Cycle
+    //
+
+    open override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
+        plugins.forEach {
+            $0.photoBrowser(self, viewDidLoad: view)
+        }
+        currentIndex = originPageIndex
     }
-    
-    public override func viewWillAppear(_ animated: Bool) {
+
+    open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         // 遮盖状态栏
         coverStatusBar(true)
-    }
-    
-    public override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        // 页面出来后，再显示页码指示器
-        // 多于一张图才会显示
-        if let pcdlg = pageControlDelegate, pcdlg.numberOfPages > 1, let pc = pageControl {
-            view.addSubview(pc)
-            pcdlg.photoBrowserPageControl(pc, needLayoutIn: view)
+        plugins.forEach {
+            $0.photoBrowser(self, viewWillAppear: view, animated: animated)
         }
     }
-    
-    public override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-        layoutViews()
-    }
-    
-    public override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        // 屏幕旋转后的调整
-        let indexPath = IndexPath.init(item: self.currentIndex, section: 0)
-        self.collectionView.scrollToItem(at: indexPath, at: .left, animated: false)
 
-        if let pcdlg = pageControlDelegate, pcdlg.numberOfPages > 1, let pc = pageControl {
-            pcdlg.photoBrowserPageControl(pc, needLayoutIn: view)
+    open override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        plugins.forEach {
+            $0.photoBrowser(self, viewDidAppear: view, animated: animated)
         }
     }
-    
+
+    open override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        plugins.forEach {
+            $0.photoBrowser(self, viewWillLayoutSubviews: view)
+        }
+    }
+
+    open override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        layoutViews()
+        plugins.forEach {
+            $0.photoBrowser(self, viewDidLayoutSubviews: view)
+        }
+    }
+
+    open override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        // 屏幕旋转处理
+        DispatchQueue.main.asyncAfter(deadline: .now() + coordinator.transitionDuration, execute: {
+            let indexPath = IndexPath(item: self.currentIndex, section: 0)
+            self.collectionView.scrollToItem(at: indexPath, at: .left, animated: false)
+        })
+    }
+
+    open override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        plugins.forEach {
+            $0.photoBrowser(self, viewWillDisappear: view)
+        }
+    }
+
+    open override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        plugins.forEach {
+            $0.photoBrowser(self, viewDidDisappear: view)
+        }
+    }
+
     /// 支持旋转
-    public override var shouldAutorotate: Bool {
+    open override var shouldAutorotate: Bool {
         return true
     }
-    
+
     /// 支持旋转的方向
-    override public var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+    open override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .all
     }
-    
+
+    //
+    // MARK: - Private Methods
+    //
+
     /// 添加视图
     private func setupViews() {
         view.addSubview(collectionView)
     }
-    
+
     /// 视图布局
     private func layoutViews() {
-        // flowLayout
         flowLayout.minimumLineSpacing = photoSpacing
         flowLayout.itemSize = view.bounds.size
-        // collectionView
         collectionView.frame = view.bounds
+        collectionView.frame.size.width = view.bounds.width + photoSpacing
+        collectionView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: photoSpacing)
     }
-    
+
     /// 遮盖状态栏。以改变windowLevel的方式遮盖
     private func coverStatusBar(_ cover: Bool) {
-        let win = view.window ?? UIApplication.shared.keyWindow
-        guard let window = win else {
+        guard let window = view.window ?? UIApplication.shared.keyWindow else {
             return
         }
-        
         if originWindowLevel == nil {
             originWindowLevel = window.windowLevel
         }
-        if cover {
-            window.windowLevel = UIWindowLevelStatusBar + 1
-        } else {
-            window.windowLevel = originWindowLevel
+        guard let originLevel = originWindowLevel else {
+            return
         }
+        window.windowLevel = cover ? UIWindowLevelStatusBar + 1 : originLevel
     }
 }
 
+//
+// MARK: - UICollectionView DataSource
+//
+
 extension PhotoBrowser: UICollectionViewDataSource {
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        guard let delegate = photoBrowserDelegate else {
-            return 0
+        var number = 0
+        if let localCount = localImages?.count {
+            number = localCount
+        } else if let dlgNumber = photoBrowserDelegate?.numberOfPhotos(in: self) {
+            number = dlgNumber
         }
-        return delegate.numberOfPhotos(in: self)
+        plugins.forEach {
+            $0.photoBrowser(self, numberOfPhotos: number)
+        }
+        return number
     }
-    
+
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NSStringFromClass(PhotoBrowserCell.self), for: indexPath) as! PhotoBrowserCell
+        let cell = collectionView.dequeueReusableCell(PhotoBrowserCell.self, for: indexPath)
         cell.imageView.contentMode = imageScaleMode
-        cell.photoBrowserCellDelegate = self
-        let (image, highQualityUrl, rawUrl) = imageFor(index: indexPath.item)
-        cell.setImage(image, highQualityUrl: highQualityUrl, rawUrl: rawUrl)
+        cell.cellDelegate = self
+        cell.photoLoader = photoLoader
         cell.imageMaximumZoomScale = imageMaximumZoomScale
         cell.imageZoomScaleForDoubleTap = imageZoomScaleForDoubleTap
+        cellPlugins.forEach {
+            $0.photoBrowserCellDidReused(cell, at: indexPath.item)
+        }
+        if let local = localImage(for: indexPath.item) {
+            cell.setImage(local, highQualityUrl: nil, rawUrl: nil)
+        } else {
+            let (image, highQualityUrl, rawUrl) = imageFor(index: indexPath.item)
+            cell.setImage(image, highQualityUrl: highQualityUrl, rawUrl: rawUrl)
+        }
         return cell
     }
+
+    /// 尝试取本地图片
+    private func localImage(for index: Int) -> UIImage? {
+        guard let images = localImages, index < images.count else {
+            return localImageFromDelegate(for: index)
+        }
+        return images[index]
+    }
     
+    /// 通过代理取本地图片
+    private func localImageFromDelegate(for index: Int) -> UIImage? {
+        return photoBrowserDelegate?.photoBrowser(self, localImageForIndex: index)
+    }
+
     private func imageFor(index: Int) -> (UIImage?, highQualityUrl: URL?, rawUrl: URL?) {
         guard let delegate = photoBrowserDelegate else {
             return (nil, nil, nil)
         }
         // 缩略图
-        let thumbnailImage = delegate.photoBrowser(self, thumbnailImageForIndex: index)
+        let originImage = delegate.photoBrowser(self, thumbnailImageForIndex: index)
         // 高清图url
         let highQualityUrl = delegate.photoBrowser(self, highQualityUrlForIndex: index)
         // 原图url
         let rawUrl = delegate.photoBrowser(self, rawUrlForIndex: index)
-        return (thumbnailImage, highQualityUrl, rawUrl)
+        return (originImage, highQualityUrl, rawUrl)
     }
 }
 
-// MARK: - UICollectionViewDelegate
+//
+// MARK: - UICollectionView Delegate
+//
 
 extension PhotoBrowser: UICollectionViewDelegate {
     /// 减速完成后，计算当前页
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        let offsetX = scrollView.contentOffset.x
-        let width = scrollView.frame.width + photoSpacing
-        currentIndex = Int(offsetX / width)
+        currentIndex = Int(scrollView.contentOffset.x / scrollView.bounds.width)
+    }
+
+    /// 滑动中
+    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        plugins.forEach {
+            $0.photoBrowser(self, scrollViewDidScroll: scrollView)
+        }
     }
 }
 
-// MARK: - 转场动画
+//
+// MARK: - Animated Transitioning
+//
 
 extension PhotoBrowser: UIViewControllerTransitioningDelegate {
+    /// 提供进场动画
     public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         // 立即布局
         setupViews()
@@ -311,17 +441,58 @@ extension PhotoBrowser: UIViewControllerTransitioningDelegate {
         collectionView.reloadData()
         collectionView.scrollToItem(at: indexPath, at: .left, animated: false)
         collectionView.layoutIfNeeded()
+        // 枚举动画类型
+        switch animationType {
+        case .scale, .scaleNoHiding:
+            return makeScalePresentationAnimator(indexPath: indexPath)
+        case .fade:
+            return FadeAnimator()
+        }
+    }
+
+    /// 提供退场动画
+    public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        switch animationType {
+        case .scale, .scaleNoHiding:
+            return makeDismissedAnimator()
+        case .fade:
+            return FadeAnimator()
+        }
+    }
+
+    /// 提供转场协调器
+    public func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
+        switch animationType {
+        case .scale:
+            let controller = ScalePresentationController(presentedViewController: presented, presenting: presenting)
+            controller.currentHiddenView = relatedView
+            fadePresentationController = controller
+            scalePresentationController = controller
+            return controller
+        case .scaleNoHiding:
+            let controller = ScalePresentationController(presentedViewController: presented, presenting: presenting)
+            fadePresentationController = controller
+            scalePresentationController = controller
+            return controller
+        case .fade:
+            let controller = FadePresentationController(presentedViewController: presented, presenting: presented)
+            fadePresentationController = controller
+            return controller
+        }
+    }
+
+    /// 创建缩放型进场动画
+    private func makeScalePresentationAnimator(indexPath: IndexPath) -> UIViewControllerAnimatedTransitioning {
         let cell = collectionView.cellForItem(at: indexPath) as? PhotoBrowserCell
         let imageView = UIImageView(image: cell?.imageView.image)
         imageView.contentMode = imageScaleMode
         imageView.clipsToBounds = true
         // 创建animator
-        let animator = ScaleAnimator(startView: relatedView, endView: cell?.imageView, scaleView: imageView)
-        presentationAnimator = animator
-        return animator
+        return ScaleAnimator(startView: relatedView, endView: cell?.imageView, scaleView: imageView)
     }
-    
-    public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+
+    /// 创建缩放型退场动画
+    private func makeDismissedAnimator() -> UIViewControllerAnimatedTransitioning? {
         guard let cell = collectionView.visibleCells.first as? PhotoBrowserCell else {
             return nil
         }
@@ -330,35 +501,82 @@ extension PhotoBrowser: UIViewControllerTransitioningDelegate {
         imageView.clipsToBounds = true
         return ScaleAnimator(startView: cell.imageView, endView: relatedView, scaleView: imageView)
     }
-    
-    public func presentationController(forPresented presented: UIViewController, presenting: UIViewController?, source: UIViewController) -> UIPresentationController? {
-        let coordinator = ScaleAnimatorCoordinator(presentedViewController: presented, presenting: presenting)
-        coordinator.currentHiddenView = relatedView
-        animatorCoordinator = coordinator
-        return coordinator
-    }
 }
 
-// MARK: - PhotoBrowserCellDelegate
+//
+// MARK: - PhotoBrowserCell Delegate
+//
 
 extension PhotoBrowser: PhotoBrowserCellDelegate {
-    public func photoBrowserCellDidSingleTap(_ view: PhotoBrowserCell) {
+
+    public func photoBrowserCell(_ cell: PhotoBrowserCell, didSingleTap image: UIImage?) {
+        if let dlg = photoBrowserDelegate {
+            dlg.photoBrowser(self, willDismissWithIndex: currentIndex, image: image)
+        }
         coverStatusBar(false)
-        dismiss(animated: true, completion: nil)
+        dismiss(animated: true, completion: { [weak self] in
+            if let `self` = self, let dlg = self.photoBrowserDelegate {
+                dlg.photoBrowser(self, didDismissWithIndex: self.currentIndex, image: image)
+            }
+        })
     }
-    
+
     public func photoBrowserCell(_ view: PhotoBrowserCell, didPanScale scale: CGFloat) {
         // 实测用scale的平方，效果比线性好些
         let alpha = scale * scale
-        animatorCoordinator?.maskView.alpha = alpha
+        fadePresentationController?.maskAlpha = alpha
         // 半透明时重现状态栏，否则遮盖状态栏
         coverStatusBar(alpha >= 1.0)
     }
-    
+
     public func photoBrowserCell(_ cell: PhotoBrowserCell, didLongPressWith image: UIImage) {
         if let indexPath = collectionView.indexPath(for: cell) {
             photoBrowserDelegate?.photoBrowser(self, didLongPressForIndex: indexPath.item, image: image)
         }
     }
+
+    public func photoBrowserCellDidLayout(_ cell: PhotoBrowserCell) {
+        cellPlugins.forEach {
+            $0.photoBrowserCellDidLayout(cell)
+        }
+    }
+
+    public func photoBrowserCellSetImage(_ cell: PhotoBrowserCell, placeholder: UIImage?, highQualityUrl: URL?, rawUrl: URL?) {
+        cellPlugins.forEach {
+            $0.photoBrowserCellSetImage(cell, placeholder: placeholder, highQualityUrl: highQualityUrl, rawUrl: rawUrl)
+        }
+    }
+
+    public func photoBrowserCellWillLoadImage(_ cell: PhotoBrowserCell, placeholder: UIImage?, url: URL?) {
+        cellPlugins.forEach {
+            $0.photoBrowserCellWillLoadImage(cell, placeholder: placeholder, url: url)
+        }
+    }
+
+    public func photoBrowserCellLoadingImage(_ cell: PhotoBrowserCell, receivedSize: Int64, totalSize: Int64) {
+        cellPlugins.forEach {
+            $0.photoBrowserCellLoadingImage(cell, receivedSize: receivedSize, totalSize: totalSize)
+        }
+    }
+
+    public func photoBrowserCellDidLoadImage(_ cell: PhotoBrowserCell, placeholder: UIImage?, url: URL?) {
+        cellPlugins.forEach {
+            $0.photoBrowserCellDidLoadImage(cell, placeholder: placeholder, url: url)
+        }
+    }
 }
 
+private extension UICollectionView {
+    func registerCell<T: UICollectionViewCell>(_ type: T.Type) {
+        let identifier = String(describing: type.self)
+        register(type, forCellWithReuseIdentifier: identifier)
+    }
+
+    func dequeueReusableCell<T: UICollectionViewCell>(_ type: T.Type, for indexPath: IndexPath) -> T {
+        let identifier = String(describing: type.self)
+        guard let cell = dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath) as? T else {
+            fatalError("\(type.self) was not registered")
+        }
+        return cell
+    }
+}

@@ -20,33 +20,23 @@ public struct LYAutoAlert {
                      cancel: String?,
                      sureAction: @escaping LYAutoTitleCallback,
                      cancelAction: @escaping LYAutoTitleCallback) {
-        
-        var confirmTitle = ""
-        var cancelTitle = ""
-        
-        if check {
-            if confirm == nil {
-                confirmTitle = "确认"
-            } else {
-                confirmTitle = confirm!
-            }
-            
-            if cancel == nil {
-                cancelTitle = "取消"
-            } else {
-                cancelTitle = cancel!
-            }
-        } else {
-            if confirm == nil {
-                confirmTitle = "我知道了"
-            } else {
-                confirmTitle = confirm!
-            }
-        }
-        
         let alertController = UIAlertController(title: title, message: subTitle, preferredStyle: .alert)
         
         if check {
+            var confirmTitle = ""
+            if let confirmStr = confirm {
+                confirmTitle = confirmStr
+            } else {
+                confirmTitle = "确认"
+            }
+            
+            var cancelTitle = ""
+            if let cancelStr = cancel {
+                cancelTitle = cancelStr
+            } else {
+                cancelTitle = "取消"
+            }
+            
             let cancelAction = UIAlertAction(title: cancelTitle, style: .cancel, handler: { (action) in
                 cancelAction("取消")
             })
@@ -57,6 +47,13 @@ public struct LYAutoAlert {
             })
             alertController.addAction(sureAction)
         } else {
+            var confirmTitle: String
+            if let confirmStr = confirm {
+                confirmTitle = confirmStr
+            } else {
+                confirmTitle = "我知道了"
+            }
+            
             let cancelAction = UIAlertAction(title: confirmTitle, style: .cancel, handler: { (action) in
                 sureAction("确认")
             })

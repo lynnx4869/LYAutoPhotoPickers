@@ -8,7 +8,7 @@
 
 import UIKit
 import WebKit
-import SSZipArchive
+import Zip
 
 /// 静态量
 public struct LyConsts {
@@ -27,30 +27,31 @@ public struct LyConsts {
     
 }
 
-public extension UIColor {
+public extension Int {
     
     /// 从16进制获取UIColor
     ///
     /// - Parameters:
-    ///   - hex: 16进制颜色值 ： 如 :#007ac0 即为 0x15A230
     ///   - alpha: 透明度 0 ~ 1
     /// - Returns: UIColor
-    static public func color(hex: Int, alpha: CGFloat) -> UIColor {
-        let color = UIColor(red: CGFloat(Double(((hex & 0xFF0000) >> 16))/255.0),
-                            green: CGFloat(Double(((hex & 0xFF00) >> 8))/255.0),
-                            blue: CGFloat(Double((hex & 0xFF))/255.0),
+    public func color(_ alpha: CGFloat) -> UIColor {
+        let color = UIColor(red: CGFloat(Double(((self & 0xFF0000) >> 16))/255.0),
+                            green: CGFloat(Double(((self & 0x00FF00) >> 8))/255.0),
+                            blue: CGFloat(Double((self & 0x0000FF))/255.0),
                             alpha: alpha)
-        
         return color
     }
     
     /// 从16进制获取UIColor alpha 默认为1
     ///
-    /// - Parameter hex: 16进制颜色值 ： 如 :#007ac0 即为 0x15A230
     /// - Returns: UIColor
-    static public func color(hex: Int) -> UIColor {
-        return UIColor.color(hex: hex, alpha: 1.0)
+    public func color() -> UIColor {
+        return self.color(1.0)
     }
+    
+}
+
+public extension UIColor {
     
     /// 获取纯色图片
     ///
@@ -90,9 +91,12 @@ public extension UIImage {
         context?.setFillColor(color.cgColor)
         context?.fill(imageReact)
         
-        let newImage = UIGraphicsGetImageFromCurrentImageContext()!
-        UIGraphicsEndImageContext()
+        guard let newImage = UIGraphicsGetImageFromCurrentImageContext() else {
+            UIGraphicsEndImageContext()
+            return nil
+        }
         
+        UIGraphicsEndImageContext()
         return newImage
     }
     
@@ -180,7 +184,10 @@ public extension UIImage {
         return nil
     }
     
-    fileprivate func fixOrientation() -> UIImage? {
+    /// 修复图片方向
+    ///
+    /// - Returns: 输出图片
+    public func fixOrientation() -> UIImage? {
         if imageOrientation == .up {
             return self
         }
@@ -250,6 +257,9 @@ public extension UIImage {
     
 }
 
+public typealias LYUnzipProgress = (Double) -> Void
+public typealias LYUnzipFinished = (URL?, Error?) -> Void
+
 public extension String {
     
     /// 解压文件
@@ -258,19 +268,32 @@ public extension String {
     ///   - path: 解压到路径
     ///   - progress: 进行中
     ///   - finished: 已完成
-    public func unzip(toPath path: String,
-                      progress: ((String, unz_file_info, Int, Int)->Void)?,
-                      finished: ((String, Bool, Error?)->Void)?) {
-        SSZipArchive.unzipFile(atPath: self,
-                               toDestination: path,
-                               progressHandler: { (entry, zipInfo, entryNumber, total) in
-                                if progress != nil {
-                                    progress!(entry, zipInfo, entryNumber, total)
-                                }
-        })
-        { (path, succeeded, error) in
-            if finished != nil {
-                finished!(path, succeeded, error)
+    public func unzip(_ path: String,
+                      _ progress: LYUnzipProgress?,
+                      _ finished: LYUnzipFinished?) {
+        do {
+            let fileUrl = URL(fileURLWithPath: self)
+            let dUrl = URL(fileURLWithPath: path)
+            
+            try Zip.unzipFile(fileUrl,
+                              destination: dUrl,
+                              overwrite: true,
+                              password: nil,
+                              progress:
+            { p in
+                if let progress = progress {
+                    progress(p)
+                }
+                
+                if let finished = finished, p == 1.0 {
+                    finished(dUrl, nil)
+                }
+            }, fileOutputHandler: { url in
+                debugPrint("unzip file : " + url.absoluteString)
+            })
+        } catch {
+            if let finished = finished {
+                finished(nil, error)
             }
         }
     }
@@ -280,8 +303,8 @@ public extension String {
     /// - Parameters:
     ///   - progress: 进行中
     ///   - finished: 已完成
-    public func unzipLocal(progress: ((String, unz_file_info, Int, Int)->Void)?,
-                           finished: ((String, Bool, Error?)->Void)?) {
+    public func unzipLocal(_ progress: LYUnzipProgress?,
+                           _ finished: LYUnzipFinished?) {
         var names = self.components(separatedBy: "/")
         names.removeLast()
         var rootPath = ""
@@ -290,7 +313,7 @@ public extension String {
                 rootPath += "/\(name)"
             }
         }
-        self.unzip(toPath: "\(rootPath)/", progress: progress, finished: finished)
+        self.unzip("\(rootPath)/", progress, finished)
     }
     
     /// 解压到本地并移除压缩文件
@@ -298,35 +321,39 @@ public extension String {
     /// - Parameters:
     ///   - progress: 进行中
     ///   - finished: 已完成
-    public func unzipDelLocal(progress: ((String, unz_file_info, Int, Int)->Void)?,
-                              finished: ((String, Bool, Error?)->Void)?) {
-        self.unzipLocal(progress: progress, finished: finished)
-        self.remove()
+    public func unzipDelLocal(_ progress: LYUnzipProgress?,
+                              _ finished: LYUnzipFinished?) {
+        self.unzipLocal(progress, finished)
+        let _ = self.remove()
     }
     
     /// 移除文件
-    public func remove() {
+    public func remove() -> Error? {
         let fileManager = FileManager.default
-        if fileManager.fileExists(atPath: self) {
-            do {
-                try fileManager.removeItem(atPath: self)
-            } catch {
-                print(error)
-            }
+        do {
+            try fileManager.removeItem(atPath: self)
+        } catch {
+            debugPrint(error)
+            return error
         }
+        
+        return nil
     }
     
     /// 拷贝文件
     ///
     /// - Parameter path: 拷贝文件到路径
-    public func copy(toPath path: String) {
+    public func copy(toPath path: String) -> Error? {
         let fileManager = FileManager.default
         do {
             let names = self.components(separatedBy: "/")
             try fileManager.copyItem(atPath: self, toPath: "\(path)/\(names[names.count-1])")
         } catch {
-            print(error)
+            debugPrint(error)
+            return error
         }
+        
+        return nil
     }
     
     /// 文件是否存在

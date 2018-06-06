@@ -6,8 +6,8 @@ target 'LYAutoPhotoPickers' do
   use_frameworks!
 
   # Pods for LYAutoPhotoPickers
-  pod 'JXPhotoBrowser'
-  pod 'TOCropViewController'
   pod 'LYAutoUtils'
+  pod 'JXPhotoBrowser'
+  pod 'CropViewController'
 
 end

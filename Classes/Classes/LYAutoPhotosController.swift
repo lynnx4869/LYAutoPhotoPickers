@@ -9,13 +9,8 @@
 import UIKit
 import Photos
 import LYAutoUtils
-import TOCropViewController
+import CropViewController
 import JXPhotoBrowser
-
-class LYAutoPhotoAsset: NSObject {
-    var asset: PHAsset!
-    var tumImage: UIImage!
-}
 
 class LYAutoPhotoHeaderView: UICollectionReusableView {
     override init(frame: CGRect) {
@@ -40,7 +35,7 @@ class LYAutoPhotoFooterView: UICollectionReusableView {
         
         countLabel = UILabel(frame: bounds)
         countLabel.textAlignment = .center
-        countLabel.textColor = UIColor.color(hex: 0xc3c3c3)
+        countLabel.textColor = 0xc3c3c3.color()
         countLabel.font = UIFont.systemFont(ofSize: 14)
         addSubview(countLabel)
     }
@@ -50,9 +45,8 @@ class LYAutoPhotoFooterView: UICollectionReusableView {
     }
 }
 
-class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, TOCropViewControllerDelegate, LYAutoPhotoTapDelegate, PhotoBrowserDelegate {
+class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, PhotoBrowserDelegate, CropViewControllerDelegate, LYAutoPhotoTapDelegate {
 
-    var maxSelects: Int!
     var assetCollection: PHAssetCollection!
     
     @IBOutlet fileprivate weak var collectionView: UICollectionView!
@@ -60,9 +54,9 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
     @IBOutlet fileprivate weak var cutBtn: UIButton!
     @IBOutlet fileprivate weak var sureBtn: UIButton!
     
-    fileprivate var photos = [LYAutoPhotoAsset]()
-    fileprivate var selectPhotos = [LYAutoPhotoAsset]()
-    
+    fileprivate var photos = [LYAutoPhoto]()
+    fileprivate var selectPhotos = [LYAutoPhoto]()
+        
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -86,24 +80,28 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
         DispatchQueue.global().async {
             [weak self] in
             
-            let assets = PHAsset.fetchAssets(in: (self?.assetCollection)!, options: nil)
-            assets.enumerateObjects({ (asset, idx, info) in
-                let photoAsset = LYAutoPhotoAsset()
-                photoAsset.asset = asset
-                self?.photos.append(photoAsset)
-            })
+            if let assetCollection = self?.assetCollection {
+                let assets = PHAsset.fetchAssets(in: assetCollection, options: nil)
+                for i in 0..<assets.count {
+                    let photo = LYAutoPhoto()
+                    photo.asset = assets[i]
+                    self?.photos.append(photo)
+                }
+            }
             
             DispatchQueue.main.async {
                 self?.collectionView.reloadData()
                 
-                var yOffset: CGFloat = 0
-                if (self?.collectionView.contentSize.height)! > (self?.collectionView.bounds.size.height)! {
-                    yOffset = (self?.collectionView.contentSize.height)! - (self?.collectionView.bounds.size.height)!
+                if let ch = self?.collectionView.contentSize.height,
+                    let bh = self?.collectionView.bounds.size.height {
+                    var yOffset: CGFloat = 0
+                    if ch > bh {
+                        yOffset = ch - bh
+                    }
+                    
+                    self?.collectionView.setContentOffset(CGPoint(x: 0, y: yOffset), animated: false)
+                    self?.collectionView.isHidden = false
                 }
-                
-                self?.collectionView.setContentOffset(CGPoint(x: 0, y: yOffset), animated: false)
-                
-                self?.collectionView.isHidden = false
             }
         }
     }
@@ -118,38 +116,40 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
     }
     
     @objc fileprivate func goBack() {
-        block(false, nil)
+        block(nil)
         navigationController?.dismiss(animated: true, completion: nil)
     }
     
     @IBAction func cutPhoto(_ sender: Any) {
-        let asset = selectPhotos.first?.asset
-        
-        let tcvc = TOCropViewController(image: (asset?.getOriginAssetImage())!)
-        tcvc.delegate = self
-        tcvc.rotateClockwiseButtonHidden = false
-        if isRateTailor {
-            tcvc.customAspectRatio = CGSize(width: tailoringRate, height: 1.0)
-            tcvc.aspectRatioLockEnabled = true
-            tcvc.resetAspectRatioEnabled = false
-            tcvc.aspectRatioPickerButtonHidden = true
+        guard let photo = selectPhotos.first else {
+            return
         }
-        present(UINavigationController(rootViewController: tcvc), animated: true, completion: nil)
+        
+        let cvc = CropViewController(image: photo.image)
+        cvc.delegate = self
+        cvc.rotateClockwiseButtonHidden = false
+        if isRateTailor {
+            cvc.customAspectRatio = CGSize(width: tailoringRate, height: 1.0)
+            cvc.aspectRatioLockEnabled = true
+            cvc.resetAspectRatioEnabled = false
+            cvc.aspectRatioLockEnabled = true
+        }
+        
+        navigationController?.pushViewController(cvc, animated: false)
     }
     
     @IBAction func sureSelectPhotos(_ sender: Any) {
-        let images = selectPhotos.map {
-            LYAutoPhoto($0.asset.getOriginAssetImage(), $0.asset)
-        }
-        block(true, images)
+        block(selectPhotos)
         navigationController?.dismiss(animated: true, completion: nil)
     }
     
-    internal func tapPhoto(sender: UIView?, index: Int) {
-        let photoAsset = photos[index]
+    func tapPhoto(sender: UIView?, index: Int) {
+        let photo = photos[index]
         
-        if selectPhotos.contains(photoAsset) {
-            selectPhotos.remove(at: selectPhotos.index(of: photoAsset)!)
+        if selectPhotos.contains(photo) {
+            if let i = selectPhotos.index(of: photo) {
+                selectPhotos.remove(at: i)
+            }
         } else {
             if selectPhotos.count == maxSelects && maxSelects != 0 {
                 LYAutoAlert.show(title: "提示",
@@ -168,7 +168,7 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
             }
             
             if #available(iOS 9.0, *) {
-                if photoAsset.asset.sourceType == .typeCloudShared {
+                if photo.asset.sourceType == .typeCloudShared {
                     LYAutoAlert.show(title: "提示",
                                      subTitle: "该图片储存于云端，请先前往相册同步到本地",
                         check: false,
@@ -185,7 +185,10 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
                 }
             }
             
-            selectPhotos.append(photoAsset)
+            if photo.image == nil {
+                photo.image = photo.asset.getOriginAssetImage()
+            }
+            selectPhotos.append(photo)
         }
         
         if selectPhotos.count == 1 {
@@ -204,45 +207,47 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
     }
     
     //MARK: - UICollectionViewDelegate
-    internal func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return photos.count
     }
     
-    internal func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = (LyConsts.ScreenWidth - 15) / 4
         return CGSize(width: width, height: width)
     }
     
-    internal func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "LYAutoPhotoSelectCellId", for: indexPath) as! LYAutoPhotoSelectCell
         
         cell.delegate = self
         cell.currentIndex = indexPath.item
         
-        let photoAsset = photos[indexPath.item]
+        let photo = photos[indexPath.item]
         
-        if photoAsset.tumImage == nil {
-            photoAsset.tumImage = photoAsset.asset.getTumAssetImage()
+        if photo.tumImage == nil {
+            photo.tumImage = photo.asset.getTumAssetImage()
         }
         
-        cell.tumImage.image = photoAsset.tumImage
+        cell.tumImage.image = photo.tumImage
         
-        if selectPhotos.contains(photoAsset) {
-            cell.selectTag.text = String(describing: selectPhotos.index(of: photoAsset)!+1)
-            cell.selectTag.backgroundColor = UIColor.color(hex: 0x1296DB)
+        if selectPhotos.contains(photo) {
+            if let i = selectPhotos.index(of: photo) {
+                cell.selectTag.text = String(i+1)
+            }
+            cell.selectTag.backgroundColor = 0x1296db.color()
         } else {
             cell.selectTag.text = ""
-            cell.selectTag.backgroundColor = UIColor.color(hex: 0xffffff, alpha: 0.3)
+            cell.selectTag.backgroundColor = 0xffffff.color(0.3)
         }
         
         return cell
     }
     
-    internal func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let photoAsset = photos[indexPath.item]
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let photo = photos[indexPath.item]
         
         if #available(iOS 9.0, *) {
-            if photoAsset.asset.sourceType == .typeCloudShared {
+            if photo.asset.sourceType == .typeCloudShared {
                 LYAutoAlert.show(title: "提示",
                                  subTitle: "该图片储存于云端，请先前往相册同步到本地",
                                  check: false,
@@ -259,19 +264,23 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
             }
         }
         
-        let browser = PhotoBrowser(showByViewController: self, delegate: self)
-        browser.show(index: indexPath.item)
+        let browser = PhotoBrowser()
+        browser.animationType = .scale
+        browser.photoBrowserDelegate = self
+        browser.plugins.append(NumberPageControlPlugin())
+        browser.originPageIndex = indexPath.item
+        browser.show()
     }
     
-    internal func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: LyConsts.ScreenWidth, height: 5)
     }
     
-    internal func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
         return CGSize(width: LyConsts.ScreenWidth, height: 30)
     }
     
-    internal func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         var supplementaryView: UICollectionReusableView!
         
         if kind == UICollectionElementKindSectionHeader {
@@ -288,20 +297,6 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
         return supplementaryView
     }
     
-    //MARK: - TOCropViewControllerDelegate
-    internal func cropViewController(_ cropViewController: TOCropViewController, didFinishCancelled cancelled: Bool) {
-        cropViewController.dismiss(animated: true, completion: nil)
-    }
-    
-    internal func cropViewController(_ cropViewController: TOCropViewController, didCropToImage image: UIImage, rect cropRect: CGRect, angle: Int) {
-        let photoAsset = selectPhotos.first
-        block(true, [LYAutoPhoto(image, photoAsset?.asset)])
-        
-        cropViewController.dismiss(animated: false) { 
-            self.navigationController?.dismiss(animated: true, completion: nil)
-        }
-    }
-    
     //MARK: - PhotoBrowserDelegate
     func numberOfPhotos(in photoBrowser: PhotoBrowser) -> Int {
         return photos.count
@@ -312,13 +307,34 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
     }
     
     func photoBrowser(_ photoBrowser: PhotoBrowser, thumbnailImageForIndex index: Int) -> UIImage? {
-        let cell = collectionView.cellForItem(at: IndexPath(item: index, section: 0)) as? LYAutoPhotoSelectCell
-        return cell?.tumImage.image
+        let photo = photos[index]
+        if photo.tumImage == nil {
+            photo.tumImage = photo.asset.getTumAssetImage()
+        }
+        return photo.tumImage
     }
     
-    func photoBrowser(_ photoBrowser: PhotoBrowser, rawUrlForIndex index: Int) -> URL? {
-        let photoAsset = photos[index]
-        return photoAsset.asset.getAssetUrl()
+    func photoBrowser(_ photoBrowser: PhotoBrowser, localImageForIndex index: Int) -> UIImage? {
+        let photo = photos[index]
+        if photo.image == nil {
+            photo.image = photo.asset.getOriginAssetImage()
+        }
+        return photo.image
+    }
+    
+    //MARK: - CropViewControllerDelegate
+    func cropViewController(_ cropViewController: CropViewController, didFinishCancelled cancelled: Bool) {
+        cropViewController.navigationController?.popViewController(animated: false)
+    }
+    
+    func cropViewController(_ cropViewController: CropViewController, didCropToImage image: UIImage, withRect cropRect: CGRect, angle: Int) {
+        if let photo = selectPhotos.first {
+            photo.image = image
+            block([photo])
+        }
+        
+        cropViewController.navigationController?.popViewController(animated: false)
+        navigationController?.dismiss(animated: true, completion: nil)
     }
     
 }

@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		0BE702ED297ECDB858B1FDA1 /* Pods_LYAutoPhotoPickers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0193666CA00E098FDE027D65 /* Pods_LYAutoPhotoPickers.framework */; };
+		8B02A8D420C53CF40060FDD5 /* LYAutoMotionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B02A8D320C53CF40060FDD5 /* LYAutoMotionManager.swift */; };
+		8B1633A420C66E1500F4DF2F /* LYAutoPhotoBasicController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B1633A320C66E1400F4DF2F /* LYAutoPhotoBasicController.swift */; };
 		8B1F992B1EF231B7004DA42A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B1F992A1EF231B7004DA42A /* AppDelegate.swift */; };
 		8B1F992D1EF231B7004DA42A /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B1F992C1EF231B7004DA42A /* ViewController.swift */; };
 		8B1F99301EF231B7004DA42A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8B1F992E1EF231B7004DA42A /* Main.storyboard */; };
@@ -29,7 +31,6 @@
 		8B1F99601EF231F1004DA42A /* ly_round@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 8B1F994E1EF231F1004DA42A /* ly_round@3x.png */; };
 		8B1F99611EF231F1004DA42A /* ly_sure@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 8B1F994F1EF231F1004DA42A /* ly_sure@2x.png */; };
 		8B1F99621EF231F1004DA42A /* ly_sure@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 8B1F99501EF231F1004DA42A /* ly_sure@3x.png */; };
-		8B3895F21F033A470052C479 /* LYAutoPhotoBasicController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B3895F11F033A470052C479 /* LYAutoPhotoBasicController.swift */; };
 		8B3895F41F033E3C0052C479 /* LYAutoCameraController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B3895F31F033E3C0052C479 /* LYAutoCameraController.swift */; };
 		8B3F3DFE2005E3EA00243212 /* ly_flash-auto@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 8B3F3DFA2005E3E900243212 /* ly_flash-auto@3x.png */; };
 		8B3F3DFF2005E3EA00243212 /* ly_flash-on@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 8B3F3DFB2005E3E900243212 /* ly_flash-on@2x.png */; };
@@ -54,6 +55,8 @@
 /* Begin PBXFileReference section */
 		0193666CA00E098FDE027D65 /* Pods_LYAutoPhotoPickers.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_LYAutoPhotoPickers.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4E69B0E5BC8103B21DC820F6 /* Pods-LYAutoPhotoPickers.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LYAutoPhotoPickers.release.xcconfig"; path = "Pods/Target Support Files/Pods-LYAutoPhotoPickers/Pods-LYAutoPhotoPickers.release.xcconfig"; sourceTree = "<group>"; };
+		8B02A8D320C53CF40060FDD5 /* LYAutoMotionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LYAutoMotionManager.swift; sourceTree = "<group>"; };
+		8B1633A320C66E1400F4DF2F /* LYAutoPhotoBasicController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LYAutoPhotoBasicController.swift; sourceTree = "<group>"; };
 		8B1F99271EF231B7004DA42A /* LYAutoPhotoPickers.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LYAutoPhotoPickers.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B1F992A1EF231B7004DA42A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8B1F992C1EF231B7004DA42A /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -77,7 +80,6 @@
 		8B1F994E1EF231F1004DA42A /* ly_round@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ly_round@3x.png"; sourceTree = "<group>"; };
 		8B1F994F1EF231F1004DA42A /* ly_sure@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ly_sure@2x.png"; sourceTree = "<group>"; };
 		8B1F99501EF231F1004DA42A /* ly_sure@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ly_sure@3x.png"; sourceTree = "<group>"; };
-		8B3895F11F033A470052C479 /* LYAutoPhotoBasicController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LYAutoPhotoBasicController.swift; sourceTree = "<group>"; };
 		8B3895F31F033E3C0052C479 /* LYAutoCameraController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LYAutoCameraController.swift; sourceTree = "<group>"; };
 		8B3F3DFA2005E3E900243212 /* ly_flash-auto@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ly_flash-auto@3x.png"; sourceTree = "<group>"; };
 		8B3F3DFB2005E3E900243212 /* ly_flash-on@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ly_flash-on@2x.png"; sourceTree = "<group>"; };
@@ -169,7 +171,7 @@
 				8BCA8D9E1F02381A00013B6E /* LYAutoPhotoPickers.swift */,
 				8BCA8DA01F023F7300013B6E /* LYAutoAuthErrorController.swift */,
 				8BCA8DA11F023F7300013B6E /* LYAutoAuthErrorController.xib */,
-				8B3895F11F033A470052C479 /* LYAutoPhotoBasicController.swift */,
+				8B1633A320C66E1400F4DF2F /* LYAutoPhotoBasicController.swift */,
 				8B3895F31F033E3C0052C479 /* LYAutoCameraController.swift */,
 				8B838CBF1F05F46B0009A4D9 /* LYAutoAlbumsController.swift */,
 				8B838CC31F05F4B10009A4D9 /* LYAutoAlbumCell.swift */,
@@ -182,6 +184,7 @@
 				8BCADC5120072B7B004AFBDF /* LYAutoQRScanView.swift */,
 				8BCADC5320072B85004AFBDF /* LYAutoQRScanView.xib */,
 				8B60D9171F09D36E005D57DD /* LYAutoPhotoExtensions.swift */,
+				8B02A8D320C53CF40060FDD5 /* LYAutoMotionManager.swift */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -232,8 +235,7 @@
 				8B1F99231EF231B7004DA42A /* Sources */,
 				8B1F99241EF231B7004DA42A /* Frameworks */,
 				8B1F99251EF231B7004DA42A /* Resources */,
-				1891A18AD1881E91AA5BEA3D /* [CP] Embed Pods Frameworks */,
-				5165A9E474A45535CE9EE220 /* [CP] Copy Pods Resources */,
+				3F7571B1A456D192F3374D37 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -251,7 +253,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0830;
-				LastUpgradeCheck = 0900;
+				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = lyning;
 				TargetAttributes = {
 					8B1F99261EF231B7004DA42A = {
@@ -319,34 +321,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		1891A18AD1881E91AA5BEA3D /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-LYAutoPhotoPickers/Pods-LYAutoPhotoPickers-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/JXPhotoBrowser/JXPhotoBrowser.framework",
-				"${BUILT_PRODUCTS_DIR}/Kingfisher/Kingfisher.framework",
-				"${BUILT_PRODUCTS_DIR}/LYAutoUtils/LYAutoUtils.framework",
-				"${BUILT_PRODUCTS_DIR}/SSZipArchive/SSZipArchive.framework",
-				"${BUILT_PRODUCTS_DIR}/TOCropViewController/TOCropViewController.framework",
-				"${BUILT_PRODUCTS_DIR}/pop/pop.framework",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/JXPhotoBrowser.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Kingfisher.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/LYAutoUtils.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SSZipArchive.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TOCropViewController.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/pop.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-LYAutoPhotoPickers/Pods-LYAutoPhotoPickers-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		39E0B4AF7F976F46DD1C386D /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -365,19 +339,32 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		5165A9E474A45535CE9EE220 /* [CP] Copy Pods Resources */ = {
+		3F7571B1A456D192F3374D37 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-LYAutoPhotoPickers/Pods-LYAutoPhotoPickers-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/CropViewController/CropViewController.framework",
+				"${BUILT_PRODUCTS_DIR}/JXPhotoBrowser/JXPhotoBrowser.framework",
+				"${BUILT_PRODUCTS_DIR}/Kingfisher/Kingfisher.framework",
+				"${BUILT_PRODUCTS_DIR}/LYAutoUtils/LYAutoUtils.framework",
+				"${BUILT_PRODUCTS_DIR}/Zip/Zip.framework",
+				"${BUILT_PRODUCTS_DIR}/pop/pop.framework",
 			);
-			name = "[CP] Copy Pods Resources";
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CropViewController.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/JXPhotoBrowser.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Kingfisher.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/LYAutoUtils.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Zip.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/pop.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-LYAutoPhotoPickers/Pods-LYAutoPhotoPickers-resources.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-LYAutoPhotoPickers/Pods-LYAutoPhotoPickers-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -390,13 +377,14 @@
 				8BCADC5220072B7B004AFBDF /* LYAutoQRScanView.swift in Sources */,
 				8BCA8DA21F023F7300013B6E /* LYAutoAuthErrorController.swift in Sources */,
 				8B838CC01F05F46B0009A4D9 /* LYAutoAlbumsController.swift in Sources */,
+				8B02A8D420C53CF40060FDD5 /* LYAutoMotionManager.swift in Sources */,
 				8B1F992D1EF231B7004DA42A /* ViewController.swift in Sources */,
 				8B838CCB1F0625850009A4D9 /* LYAutoPhotosController.swift in Sources */,
 				8B838CCF1F062BD80009A4D9 /* LYAutoPhotoSelectCell.swift in Sources */,
 				8B3895F41F033E3C0052C479 /* LYAutoCameraController.swift in Sources */,
+				8B1633A420C66E1500F4DF2F /* LYAutoPhotoBasicController.swift in Sources */,
 				8BCA8D9F1F02381A00013B6E /* LYAutoPhotoPickers.swift in Sources */,
 				8B60D91A1F0A203F005D57DD /* LYAutoQRCodeController.swift in Sources */,
-				8B3895F21F033A470052C479 /* LYAutoPhotoBasicController.swift in Sources */,
 				8B1F992B1EF231B7004DA42A /* AppDelegate.swift in Sources */,
 				8B60D9181F09D36E005D57DD /* LYAutoPhotoExtensions.swift in Sources */,
 				8B838CC51F05F4B10009A4D9 /* LYAutoAlbumCell.swift in Sources */,
@@ -439,6 +427,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -446,6 +435,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -496,6 +486,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -503,6 +494,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;

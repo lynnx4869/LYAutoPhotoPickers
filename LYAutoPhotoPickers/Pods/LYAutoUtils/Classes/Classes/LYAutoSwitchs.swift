@@ -69,7 +69,7 @@ public class LYAutoSwitchs: UIView, UICollectionViewDelegate, UICollectionViewDa
         fatalError("init(coder:) has not been implemented")
     }
     
-    fileprivate var color: UIColor = UIColor.color(hex: 0x007cdc)
+    fileprivate var color: UIColor = 0x007cdc.color()
     
     fileprivate var collectionView: UICollectionView!
     fileprivate var selectLine: UIView!
@@ -90,7 +90,7 @@ public class LYAutoSwitchs: UIView, UICollectionViewDelegate, UICollectionViewDa
         
         let bottomLine = CALayer()
         bottomLine.frame = CGRect(x: 0, y: bounds.size.height-1, width: bounds.size.width, height: 1)
-        bottomLine.backgroundColor = UIColor.color(hex: 0xEEEEEE).cgColor
+        bottomLine.backgroundColor = 0xeeeeee.color().cgColor
         layer.addSublayer(bottomLine)
         
         selectLine = UIView()
@@ -130,7 +130,7 @@ public class LYAutoSwitchs: UIView, UICollectionViewDelegate, UICollectionViewDa
 
 fileprivate class LYAutoSwitchCell: UICollectionViewCell {
 
-    open var color: UIColor = UIColor.color(hex: 0x007cdc)
+    open var color: UIColor = 0x007cdc.color()
     
     open var title: String = "" {
         didSet {
@@ -153,7 +153,7 @@ fileprivate class LYAutoSwitchCell: UICollectionViewCell {
             if isSelect {
                 titleLabel.textColor = color
             } else {
-                titleLabel.textColor = UIColor.color(hex: 0x333333)
+                titleLabel.textColor = 0x333333.color()
             }
         }
     }
@@ -168,11 +168,11 @@ fileprivate class LYAutoSwitchCell: UICollectionViewCell {
         titleLabel.center = CGPoint(x: bounds.width/2, y: bounds.height/2)
         titleLabel.textAlignment = .center
         titleLabel.font = UIFont.systemFont(ofSize: 16)
-        titleLabel.textColor = UIColor.color(hex: 0x333333)
+        titleLabel.textColor = 0x333333.color()
         addSubview(titleLabel)
         
         rightLine = CALayer()
-        rightLine.backgroundColor = UIColor.color(hex: 0xCCCCCC).cgColor
+        rightLine.backgroundColor = 0xcccccc.color().cgColor
         rightLine.frame = CGRect(x: bounds.size.width-1, y: 10, width: 1, height: bounds.size.height-20)
         layer.addSublayer(rightLine)
     }

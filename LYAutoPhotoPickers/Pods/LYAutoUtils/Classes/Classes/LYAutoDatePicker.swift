@@ -74,7 +74,7 @@ open class LYAutoDatePicker: UIViewController {
         }
         
         if color == nil {
-            color = UIColor.color(hex: 0xFF9000)
+            color = 0xff9000.color()
         }
         setComponentsColor(color: color!)
     }

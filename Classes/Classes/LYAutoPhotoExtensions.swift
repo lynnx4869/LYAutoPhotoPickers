@@ -13,12 +13,12 @@ let kPhotoTumLength: Int = 200
 
 extension PHAsset {
     
-    func getAssetImage(_ size: CGSize) -> UIImage {
+    func getAssetImage(_ size: CGSize) -> UIImage? {
         let options = PHImageRequestOptions()
         options.isSynchronous = true
         options.isNetworkAccessAllowed = true
         
-        var image: UIImage!
+        var image: UIImage?
         PHImageManager.default().requestImage(for: self,
                                               targetSize: size,
                                               contentMode: .default,
@@ -30,12 +30,12 @@ extension PHAsset {
         return image
     }
     
-    func getOriginAssetImage() -> UIImage {
+    func getOriginAssetImage() -> UIImage? {
         let size = CGSize(width: self.pixelWidth, height: self.pixelHeight)
         return getAssetImage(size)
     }
     
-    func getTumAssetImage() -> UIImage {
+    func getTumAssetImage() -> UIImage? {
         var size = CGSize.zero
         if self.pixelWidth > kPhotoTumLength {
             size = CGSize(width: kPhotoTumLength, height: kPhotoTumLength*self.pixelHeight/self.pixelWidth)
@@ -46,20 +46,6 @@ extension PHAsset {
         }
         
         return getAssetImage(size)
-    }
-    
-    func getAssetUrl() -> URL {
-        var urlString: String!
-        let options = PHImageRequestOptions()
-        options.isSynchronous = true
-        PHImageManager.default().requestImageData(for: self,
-                                                  options: options)
-        { (imageData, dataUTI, orientation, info) in
-            let oldUrl = info?["PHImageFileURLKey"] as! NSURL
-            urlString = oldUrl.absoluteString
-        }
-        let url = URL(string: urlString)
-        return url!
     }
     
 }
@@ -233,6 +219,40 @@ extension UIView {
                                                  constant: padding.right)
         
         view.addConstraints([constraintTop, constraintBottom, constraintLeft, constraintRight])
+    }
+    
+}
+
+extension UIImage {
+    
+    func fix(_ orientation: UIDeviceOrientation, _ position: AVCaptureDevice.Position) -> UIImage? {
+        if let ci = cgImage {
+            if position == .front {
+                switch orientation {
+                case .portrait, .faceUp, .faceDown, .unknown:
+                    return self
+                case .portraitUpsideDown:
+                    return UIImage(cgImage: ci, scale: scale, orientation: .left)
+                case .landscapeLeft:
+                    return UIImage(cgImage: ci, scale: scale, orientation: .down)
+                case.landscapeRight:
+                    return UIImage(cgImage: ci, scale: scale, orientation: .up)
+                }
+            } else {
+                switch orientation {
+                case .portrait, .faceUp, .faceDown, .unknown:
+                    return self
+                case .portraitUpsideDown:
+                    return UIImage(cgImage: ci, scale: scale, orientation: .left)
+                case .landscapeLeft:
+                    return UIImage(cgImage: ci, scale: scale, orientation: .up)
+                case.landscapeRight:
+                    return UIImage(cgImage: ci, scale: scale, orientation: .down)
+                }
+            }
+        }
+        
+        return nil
     }
     
 }

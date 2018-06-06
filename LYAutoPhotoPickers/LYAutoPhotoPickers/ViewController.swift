@@ -31,7 +31,7 @@ class ViewController: UIViewController {
                          btns: ["相机", "相册", "扫描二维码"],
                          viewController: self)
         { (title) in
-            var type: LYAutoPhotoType!
+            var type = LYAutoPhotoType.camera
             if title == "相机" {
                 type = .camera
             } else if title == "相册" {
@@ -40,26 +40,24 @@ class ViewController: UIViewController {
                 type = .qrcode
             }
             
-            let pickers = LYAutoPhotoPickers()
-            pickers.type = type
-            pickers.isRateTailor = false
-            pickers.tailoringRate = 0
-            pickers.maxSelects = 1
-            pickers.block = { [weak self] (result, images) in
-                if result {
-                    let image = images![0]
-                    self?.displayImage.image = image.image
+            self.showPickers(type: type, callback: { [weak self] photos in
+                if let photos = photos {
+                    let photo = photos.first
+                    self?.displayImage.image = photo?.image
+                    
+                    let path = NSHomeDirectory() + "/Documents/\(Date().description).png"
+                    let fileManager = FileManager.default
+                    fileManager.createFile(atPath: path,
+                                           contents: UIImagePNGRepresentation((photo?.image)!),
+                                           attributes: nil)
                 } else {
                     debugPrint("photo picker cancel...")
                 }
-            }
-            pickers.qrBlock = { (result) in
-                if result != nil {
-                    debugPrint(result!)
+            }, qr: { url in
+                if let u = url {
+                    debugPrint(u)
                 }
-            }
-            
-            pickers.showPhoto(in: self)
+            })
         }
     }
 

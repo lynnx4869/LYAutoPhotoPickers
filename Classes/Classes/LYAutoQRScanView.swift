@@ -19,7 +19,7 @@ class LYAutoQRScanView: UIView {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         
-        layer.borderColor = UIColor.color(hex: 0x1296db).cgColor
+        layer.borderColor = 0x1296db.color().cgColor
         layer.borderWidth = 1.0
     }
     
@@ -44,9 +44,9 @@ class LYAutoQRScanView: UIView {
         gradientLayer.frame = scanLine.bounds
         gradientLayer.startPoint = CGPoint(x: 0, y: 0)
         gradientLayer.endPoint = CGPoint(x: 1, y: 0)
-        gradientLayer.colors = [UIColor.color(hex: 0x0000ff).cgColor,
-                                UIColor.color(hex: 0x00bfff).cgColor,
-                                UIColor.color(hex: 0x0000ff).cgColor]
+        gradientLayer.colors = [0x0000ff.color().cgColor,
+                                0x00bfff.color().cgColor,
+                                0x0000ff.color().cgColor]
         scanLine.layer.addSublayer(gradientLayer)
         
         let w = scanLine.bounds.width

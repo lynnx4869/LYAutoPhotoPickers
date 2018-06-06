@@ -45,38 +45,30 @@ class LYAutoQRCodeController: UIViewController, AVCaptureMetadataOutputObjectsDe
     }
     
     @objc fileprivate func scanImage(_ sender: UIBarButtonItem) {
-        let pickers = LYAutoPhotoPickers()
-        pickers.type = .album
-        pickers.isRateTailor = false
-        pickers.tailoringRate = 0
-        pickers.maxSelects = 1
-        pickers.block = { [weak self] (result, images) in
-            if result {
-                let detector = CIDetector(ofType: CIDetectorTypeQRCode,
-                                          context: nil,
-                                          options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
-                if let ciimage = CIImage(image: images![0].image) {
-                    if let features = detector?.features(in: ciimage) {
-                        if features.count >= 1 {
-                            let feature = features.first! as! CIQRCodeFeature
-                            if let scannedResult = feature.messageString {
-                                self?.qrBlock(scannedResult)
-                            } else {
-                                self?.qrBlock(nil)
-                            }
+        showPickers(type: .album, callback: { [weak self] photos in
+            let detector = CIDetector(ofType: CIDetectorTypeQRCode,
+                                      context: nil,
+                                      options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
+            if let photo = photos?.first,
+                let ciimage = CIImage(image: photo.image) {
+                if let features = detector?.features(in: ciimage) {
+                    if features.count >= 1 {
+                        let feature = features.first! as! CIQRCodeFeature
+                        if let scannedResult = feature.messageString {
+                            self?.qrBlock(scannedResult)
                         } else {
                             self?.qrBlock(nil)
                         }
+                    } else {
+                        self?.qrBlock(nil)
                     }
                 }
-                
-                DispatchQueue.main.async {
-                    self?.navigationController?.dismiss(animated: false, completion: nil)
-                }
             }
-        }
-        
-        pickers.showPhoto(in: self)
+            
+            DispatchQueue.main.async {
+                self?.navigationController?.dismiss(animated: false, completion: nil)
+            }
+        })
     }
     
     fileprivate func scanQRCode() {

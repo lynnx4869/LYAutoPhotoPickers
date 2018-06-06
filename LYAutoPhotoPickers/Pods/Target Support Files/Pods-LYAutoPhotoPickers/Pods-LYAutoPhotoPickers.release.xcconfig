@@ -1,9 +1,9 @@
 ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES
-FRAMEWORK_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/JXPhotoBrowser" "${PODS_CONFIGURATION_BUILD_DIR}/Kingfisher" "${PODS_CONFIGURATION_BUILD_DIR}/LYAutoUtils" "${PODS_CONFIGURATION_BUILD_DIR}/SSZipArchive" "${PODS_CONFIGURATION_BUILD_DIR}/TOCropViewController" "${PODS_CONFIGURATION_BUILD_DIR}/pop"
+FRAMEWORK_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/CropViewController" "${PODS_CONFIGURATION_BUILD_DIR}/JXPhotoBrowser" "${PODS_CONFIGURATION_BUILD_DIR}/Kingfisher" "${PODS_CONFIGURATION_BUILD_DIR}/LYAutoUtils" "${PODS_CONFIGURATION_BUILD_DIR}/Zip" "${PODS_CONFIGURATION_BUILD_DIR}/pop"
 GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1
 LD_RUNPATH_SEARCH_PATHS = $(inherited) '@executable_path/Frameworks' '@loader_path/Frameworks'
-OTHER_CFLAGS = $(inherited) -iquote "${PODS_CONFIGURATION_BUILD_DIR}/JXPhotoBrowser/JXPhotoBrowser.framework/Headers" -iquote "${PODS_CONFIGURATION_BUILD_DIR}/Kingfisher/Kingfisher.framework/Headers" -iquote "${PODS_CONFIGURATION_BUILD_DIR}/LYAutoUtils/LYAutoUtils.framework/Headers" -iquote "${PODS_CONFIGURATION_BUILD_DIR}/SSZipArchive/SSZipArchive.framework/Headers" -iquote "${PODS_CONFIGURATION_BUILD_DIR}/TOCropViewController/TOCropViewController.framework/Headers" -iquote "${PODS_CONFIGURATION_BUILD_DIR}/pop/pop.framework/Headers"
-OTHER_LDFLAGS = $(inherited) -framework "JXPhotoBrowser" -framework "Kingfisher" -framework "LYAutoUtils" -framework "SSZipArchive" -framework "TOCropViewController" -framework "pop"
+OTHER_CFLAGS = $(inherited) -iquote "${PODS_CONFIGURATION_BUILD_DIR}/CropViewController/CropViewController.framework/Headers" -iquote "${PODS_CONFIGURATION_BUILD_DIR}/JXPhotoBrowser/JXPhotoBrowser.framework/Headers" -iquote "${PODS_CONFIGURATION_BUILD_DIR}/Kingfisher/Kingfisher.framework/Headers" -iquote "${PODS_CONFIGURATION_BUILD_DIR}/LYAutoUtils/LYAutoUtils.framework/Headers" -iquote "${PODS_CONFIGURATION_BUILD_DIR}/Zip/Zip.framework/Headers" -iquote "${PODS_CONFIGURATION_BUILD_DIR}/pop/pop.framework/Headers"
+OTHER_LDFLAGS = $(inherited) -framework "CropViewController" -framework "JXPhotoBrowser" -framework "Kingfisher" -framework "LYAutoUtils" -framework "Zip" -framework "pop"
 OTHER_SWIFT_FLAGS = $(inherited) "-D" "COCOAPODS"
 PODS_BUILD_DIR = ${BUILD_DIR}
 PODS_CONFIGURATION_BUILD_DIR = ${PODS_BUILD_DIR}/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)

@@ -9,9 +9,9 @@
 import UIKit
 import Photos
 import LYAutoUtils
-import TOCropViewController
+import CropViewController
 
-class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDelegate {
+class LYAutoCameraController: LYAutoPhotoBasicController, CropViewControllerDelegate {
     
     fileprivate var cameraView: UIView!
     fileprivate var photoView: UIView!
@@ -50,11 +50,11 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
 
         // Do any additional setup after loading the view.
         cameraView = UIView()
-        cameraView.backgroundColor = .white
+        cameraView.backgroundColor = .black
         view.addSubview(cameraView)
         
         photoView = UIView()
-        photoView.backgroundColor = .white
+        photoView.backgroundColor = .black
         view.addSubview(photoView)
         
         let padding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
@@ -176,6 +176,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
     
     fileprivate func initDisplayImage() {
         displayImage = UIImageView()
+        displayImage.contentMode = .scaleAspectFit
         photoView.addSubview(displayImage)
         
         let padding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
@@ -210,7 +211,6 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
         sureBtn.right(to: photoView, attribute: .right, constant: -10)
         sureBtn.width(to: photoView, constant: 40)
         sureBtn.height(to: photoView, constant: 40)
-        
     }
     
     fileprivate func cameraOfPosition(position: AVCaptureDevice.Position) -> AVCaptureDevice? {
@@ -224,7 +224,7 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
     }
     
     @objc fileprivate func closeCamera(_ btn: UIButton) {
-        block(false, nil)
+        block(nil)
         dismiss(animated: true, completion: nil)
     }
     
@@ -286,53 +286,57 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
     fileprivate var initialPinchZoom: CGFloat = 0
     
     @objc fileprivate func pinchImage(_ pinch: UIPinchGestureRecognizer) {
-        do {
-            if pinch.state == .began {
+        if pinch.state == .began {
+            do {
                 try device.lockForConfiguration()
                 initialPinchZoom = device.videoZoomFactor
+            } catch {
+                debugPrint(error)
             }
-            
-            if pinch.state == .changed {
-//                device.videoZoomFactor = pinch.scale / pinch.scale
-                var zoomFactor: CGFloat = 0
-                let scale = pinch.scale
-                if scale < 1.0 {
-                    zoomFactor = initialPinchZoom - pow(device.activeFormat.videoMaxZoomFactor, 1.0-scale)
-                } else {
-                    zoomFactor = initialPinchZoom + pow(device.activeFormat.videoMaxZoomFactor, (scale-1.0)/2.0)
-                }
-                zoomFactor = min(10.0, zoomFactor)
-                zoomFactor = max(1.0, zoomFactor)
-                device.videoZoomFactor = zoomFactor
+        }
+        
+        if pinch.state == .changed {
+            var zoomFactor: CGFloat = 0
+            let scale = pinch.scale
+            if scale < 1.0 {
+                zoomFactor = initialPinchZoom - pow(device.activeFormat.videoMaxZoomFactor, 1.0-scale)
+            } else {
+                zoomFactor = initialPinchZoom + pow(device.activeFormat.videoMaxZoomFactor, (scale-1.0)/2.0)
             }
-            
-            if pinch.state == .ended || pinch.state == .cancelled {
-                device.unlockForConfiguration()
-            }
-        } catch {
-            debugPrint(error)
+            zoomFactor = min(10.0, zoomFactor)
+            zoomFactor = max(1.0, zoomFactor)
+            device.videoZoomFactor = zoomFactor
+        }
+        
+        if pinch.state == .ended || pinch.state == .cancelled {
+            device.unlockForConfiguration()
         }
     }
     
     @objc fileprivate func takePhoto(_ btn: UIButton) {
-        let connect = imageOutput.connection(with: AVMediaType.video)
-        if connect == nil {
-            debugPrint("take photo error ...")
-            return
+        
+        if let connect = imageOutput.connection(with: AVMediaType.video) {
+            imageOutput
+                .captureStillImageAsynchronously(from: connect,
+                                                 completionHandler:
+                { [weak self] (buff, error) in
+                    if error == nil {                        
+                        let manager = LYAutoMotionManager()
+                        manager.get { orientation in
+                            if let imageDataSampleBuffer = buff,
+                                let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageDataSampleBuffer) {
+                                let image = UIImage(data: imageData, scale: 1.0)?
+                                    .fix(orientation, (self?.input.device.position)!)?.fixOrientation()
+                                self?.image = image
+                                self?.session.stopRunning()
+                            }
+                        }
+                    } else {
+                        debugPrint("take photo error ...")
+                    }
+                })
         } else {
-            imageOutput.captureStillImageAsynchronously(from: connect!,
-                                                        completionHandler:
-            { [weak self] (imageDataSampleBuffer, error) in
-                if imageDataSampleBuffer == nil {
-                    debugPrint("take photo error ...")
-                    return
-                }
-                
-                let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageDataSampleBuffer!)
-                let image = UIImage(data: imageData!, scale: 1.0)
-                self?.image = image
-                self?.session.stopRunning()
-            })
+            debugPrint("take photo error ...")
         }
     }
     
@@ -341,38 +345,44 @@ class LYAutoCameraController: LYAutoPhotoBasicController, TOCropViewControllerDe
     }
     
     @objc fileprivate func cutPhoto(_ btn: UIButton) {
-        let tcvc = TOCropViewController(image: image!)
-        tcvc.delegate = self
-        tcvc.rotateClockwiseButtonHidden = false
-        if isRateTailor {
-            tcvc.customAspectRatio = CGSize(width: tailoringRate, height: 1.0)
-            tcvc.aspectRatioLockEnabled = true
-            tcvc.resetAspectRatioEnabled = false
-            tcvc.aspectRatioLockEnabled = true
+        if let tm = image {
+            let cvc = CropViewController(image: tm)
+            cvc.delegate = self
+            cvc.rotateClockwiseButtonHidden = false
+            if isRateTailor {
+                cvc.customAspectRatio = CGSize(width: tailoringRate, height: 1.0)
+                cvc.aspectRatioLockEnabled = true
+                cvc.resetAspectRatioEnabled = false
+                cvc.aspectRatioLockEnabled = true
+            }
+            
+            present(UINavigationController(rootViewController: cvc),
+                    animated: true, completion: nil)
         }
-        
-        present(UINavigationController(rootViewController: tcvc),
-                animated: true,
-                completion: nil)
     }
     
     @objc fileprivate func surePhoto(_ btn: UIButton) {
-        block(true, [LYAutoPhoto(image, nil)])
+        let photo = LYAutoPhoto()
+        photo.image = image
+        block([photo])
         dismiss(animated: true, completion: nil)
     }
     
-    //MARK: - TOCropViewControllerDelegate
-    func cropViewController(_ cropViewController: TOCropViewController, didFinishCancelled cancelled: Bool) {
+    //MARK: - CropViewControllerDelegate
+    func cropViewController(_ cropViewController: CropViewController, didFinishCancelled cancelled: Bool) {
         cropViewController.dismiss(animated: true, completion: nil)
     }
     
-    func cropViewController(_ cropViewController: TOCropViewController, didCropToImage image: UIImage, rect cropRect: CGRect, angle: Int) {
+    func cropViewController(_ cropViewController: CropViewController, didCropToImage image: UIImage, withRect cropRect: CGRect, angle: Int) {
         self.image = nil
-        block(true, [LYAutoPhoto(image, nil)])
-
-        cropViewController.dismiss(animated: false) { 
+        
+        let photo = LYAutoPhoto()
+        photo.image = image
+        block([photo])
+        
+        cropViewController.dismiss(animated: false) {
             [weak self] in
-            self?.dismiss(animated: true, completion: nil)
+            self?.dismiss(animated: false, completion: nil)
         }
     }
     

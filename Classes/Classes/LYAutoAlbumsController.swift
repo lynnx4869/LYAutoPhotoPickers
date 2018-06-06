@@ -18,9 +18,7 @@ class LYAutoAlbumModel {
 }
 
 class LYAutoAlbumsController: LYAutoPhotoBasicController, UITableViewDelegate, UITableViewDataSource {
-    
-    var maxSelects: Int!
-    
+        
     fileprivate var array = [LYAutoAlbumModel]()
     fileprivate var tableView: UITableView!
     
@@ -33,11 +31,19 @@ class LYAutoAlbumsController: LYAutoPhotoBasicController, UITableViewDelegate, U
         
         view.backgroundColor = .white
         
+        navigationItem.title = "照片"
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "取消",
+                                                            style: .done,
+                                                            target: self,
+                                                            action: #selector(goBack(_:)))
+        
         tableView = UITableView(frame: view.bounds, style: .plain)
         tableView.delegate = self
         tableView.dataSource = self
         tableView.separatorStyle = .none
-        tableView.register(UINib(nibName: "LYAutoAlbumCell", bundle: Bundle(for: LYAutoPhotoPickers.self)), forCellReuseIdentifier: "LYAutoAlbumCellId")
+        tableView.register(UINib(nibName: "LYAutoAlbumCell",
+                                 bundle: Bundle(for: LYAutoPhotoPickers.self)),
+                           forCellReuseIdentifier: "LYAutoAlbumCellId")
         tableView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(tableView)
         
@@ -73,12 +79,9 @@ class LYAutoAlbumsController: LYAutoPhotoBasicController, UITableViewDelegate, U
             })
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
-                if self?.userLibrary != nil {
-                    self?.gotoOneAlbum(assetCollection: (self?.userLibrary)!, animated: false)
+                if let userLibrary = self?.userLibrary {
+                    self?.gotoOneAlbum(assetCollection: userLibrary, animated: false)
                 }
-                
-                self?.navigationItem.title = "照片"
-                self?.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "取消", style: .done, target: self, action: #selector(self?.goBack))
                 
                 self?.tableView.reloadData()
             })
@@ -94,8 +97,8 @@ class LYAutoAlbumsController: LYAutoPhotoBasicController, UITableViewDelegate, U
         debugPrint("albums view controller dealloc")
     }
     
-    @objc fileprivate func goBack() {
-        block(false, nil)
+    @objc fileprivate func goBack(_ item: UIBarButtonItem) {
+        block(nil)
         navigationController?.dismiss(animated: true, completion: nil)
     }
     
@@ -138,9 +141,9 @@ class LYAutoAlbumsController: LYAutoPhotoBasicController, UITableViewDelegate, U
         let pvc = LYAutoPhotosController(nibName: "LYAutoPhotosController", bundle: Bundle(for: LYAutoPhotoPickers.self))
         pvc.assetCollection = assetCollection
         pvc.maxSelects = maxSelects
-        pvc.block = block
         pvc.isRateTailor = isRateTailor
         pvc.tailoringRate = tailoringRate
+        pvc.block = block
         navigationController?.pushViewController(pvc, animated: animated)
     }
 

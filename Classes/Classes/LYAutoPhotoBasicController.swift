@@ -10,9 +10,10 @@ import UIKit
 
 class LYAutoPhotoBasicController: UIViewController {
     
+    var maxSelects: Int = 1
     var isRateTailor: Bool = false
-    var tailoringRate: Double = 0
-    var block: LYAutoCallback = { _,_ in }
+    var tailoringRate: Double = 0.0
+    var block: LYAutoCallback = { _ in }
 
     override func viewDidLoad() {
         super.viewDidLoad()
