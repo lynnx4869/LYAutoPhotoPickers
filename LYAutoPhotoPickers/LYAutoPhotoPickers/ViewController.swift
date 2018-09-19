@@ -41,15 +41,17 @@ class ViewController: UIViewController {
             }
             
             self.showPickers(type: type, callback: { [weak self] photos in
-                if let photos = photos {
-                    let photo = photos.first
-                    self?.displayImage.image = photo?.image
-                    
-                    let path = NSHomeDirectory() + "/Documents/\(Date().description).png"
-                    let fileManager = FileManager.default
-                    fileManager.createFile(atPath: path,
-                                           contents: UIImagePNGRepresentation((photo?.image)!),
-                                           attributes: nil)
+                if let photos = photos,
+                    let photo = photos.first {
+                    self?.displayImage.image = photo.image
+
+                    DispatchQueue.global().async {
+                        let path = NSHomeDirectory() + "/Documents/\(Date().description).png"
+                        let fileManager = FileManager.default
+                        fileManager.createFile(atPath: path,
+                                               contents: photo.image.pngData(),
+                                               attributes: nil)
+                    }
                 } else {
                     debugPrint("photo picker cancel...")
                 }

@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "LYAutoPhotoPickers"
-  s.version      = "0.2.0"
+  s.version      = "0.3.0"
   s.summary      = "Swift Lib Image Picker."
 
   # This description is used to generate tags and improve search results.
@@ -137,6 +137,6 @@ Pod::Spec.new do |s|
   s.dependency "TOCropViewController"
   s.dependency "LYAutoUtils"
 
-  s.pod_target_xcconfig = { 'SWIFT_VERSION' => '4.0' }
+  s.pod_target_xcconfig = { 'SWIFT_VERSION' => '4.2' }
 
 end

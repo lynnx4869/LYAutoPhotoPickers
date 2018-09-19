@@ -1,9 +1,13 @@
 PODS:
-  - CropViewController (2.3.6)
-  - JXPhotoBrowser (1.3.0):
+  - CropViewController (2.3.8)
+  - JXPhotoBrowser (1.5.1):
+    - JXPhotoBrowser/Kingfisher (= 1.5.1)
+  - JXPhotoBrowser/Core (1.5.1)
+  - JXPhotoBrowser/Kingfisher (1.5.1):
+    - JXPhotoBrowser/Core
     - Kingfisher
-  - Kingfisher (4.8.0)
-  - LYAutoUtils (0.2.7):
+  - Kingfisher (4.9.0)
+  - LYAutoUtils (0.2.8):
     - pop
     - Zip
   - pop (1.0.10)
@@ -24,13 +28,13 @@ SPEC REPOS:
     - Zip
 
 SPEC CHECKSUMS:
-  CropViewController: e6d4bd512d15a1709e9ddf71fe7d98ffd05dda0f
-  JXPhotoBrowser: 297217c8085547f56c4c5fb250758a568d60ce47
-  Kingfisher: 976d828df2b24834c6a3f2fc4d82cdbd26552be1
-  LYAutoUtils: 290760898e08a960e6e0cf9286f355b88b3c8219
+  CropViewController: 7be882b7d3fb3faef48a41924e80f689e9df2514
+  JXPhotoBrowser: 08d5e234e5742c3561b544d0824969d537d18a47
+  Kingfisher: 64539b51826b778206daa6ed815d12653caa69dd
+  LYAutoUtils: 99f47a29723b09f75d3eb02ff2d5bfd689035fe5
   pop: 82ca6b068ce9278fd350fd9dd09482a0ce9492e6
   Zip: 8877eede3dda76bcac281225c20e71c25270774c
 
-PODFILE CHECKSUM: e613d339f56bb7c0f118277539a8c93065f9b1f0
+PODFILE CHECKSUM: a655cc544fb15aca24eccdd5bb1fc437f2fa53f8
 
 COCOAPODS: 1.5.3

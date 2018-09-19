@@ -15,7 +15,7 @@ public enum LYAutoDatepickerType: Int {
 
 open class LYAutoDatePicker: UIViewController {
     
-    open static func show(type: LYAutoDatepickerType,
+    public static func show(type: LYAutoDatepickerType,
                           time: Date?,
                           maxTime: Date?,
                           minTime: Date?,

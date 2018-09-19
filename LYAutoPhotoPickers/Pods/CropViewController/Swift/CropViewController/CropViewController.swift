@@ -20,8 +20,6 @@
 //  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 //  IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import UIKit
-
 /**
  An enum containing all of the aspect ratio presets that this view controller supports
  */
@@ -86,7 +84,7 @@ public typealias CropViewCroppingStyle = TOCropViewCroppingStyle
 /// @name Class
 ///------------------------------------------------
 
-public class CropViewController: UIViewController, TOCropViewControllerDelegate {
+open class CropViewController: UIViewController, TOCropViewControllerDelegate {
     
     /**
      The original, uncropped image that was passed to this controller.
@@ -99,6 +97,14 @@ public class CropViewController: UIViewController, TOCropViewControllerDelegate 
     */
     public var delegate: CropViewControllerDelegate? {
         didSet { self.setUpDelegateHandlers() }
+    }
+    
+    /**
+     Set the title text that appears at the top of the view controller
+    */
+    override open var title: String? {
+        set { toCropViewController.title = newValue }
+        get { return toCropViewController.title }
     }
     
     /**
@@ -176,6 +182,16 @@ public class CropViewController: UIViewController, TOCropViewControllerDelegate 
     public var aspectRatioLockEnabled: Bool {
         set { toCropViewController.aspectRatioLockEnabled = newValue }
         get { return toCropViewController.aspectRatioLockEnabled }
+    }
+    
+    /**
+     If true, a custom aspect ratio is set, and the aspectRatioLockEnabled is set to true, the crop box will swap it's dimensions depending on portrait or landscape sized images.  This value also controls whether the dimensions can swap when the image is rotated.
+     
+     Default is false.
+     */
+    public var aspectRatioLockDimensionSwapEnabled: Bool {
+        set { toCropViewController.aspectRatioLockDimensionSwapEnabled = newValue }
+        get { return toCropViewController.aspectRatioLockDimensionSwapEnabled }
     }
     
     /**
@@ -323,6 +339,14 @@ public class CropViewController: UIViewController, TOCropViewControllerDelegate 
     public var toolbar: TOCropToolbar {
         return toCropViewController.toolbar
     }
+
+    /*
+     If this controller is embedded in UINavigationController its navigation bar is hidden by default. Set this property to false to show the navigation bar. This must be set before this controller is presented.
+     */
+    public var hidesNavigationBar: Bool {
+        set { toCropViewController.hidesNavigationBar = newValue }
+        get { return toCropViewController.hidesNavigationBar }
+    }
     
     /**
      Title for the 'Done' button.
@@ -352,7 +376,7 @@ public class CropViewController: UIViewController, TOCropViewControllerDelegate 
      Forward status bar status style changes to the crop view controller
      :nodoc:
      */
-    public override var childViewControllerForStatusBarStyle: UIViewController? {
+    open override var childViewControllerForStatusBarStyle: UIViewController? {
         return toCropViewController
     }
     
@@ -360,15 +384,15 @@ public class CropViewController: UIViewController, TOCropViewControllerDelegate 
      Forward status bar status visibility changes to the crop view controller
      :nodoc:
      */
-    public override var childViewControllerForStatusBarHidden: UIViewController? {
+    open override var childViewControllerForStatusBarHidden: UIViewController? {
         return toCropViewController
     }
     
-    public override var prefersStatusBarHidden: Bool {
+    open override var prefersStatusBarHidden: Bool {
         return false
     }
     
-    public override var preferredStatusBarStyle: UIStatusBarStyle {
+    open override var preferredStatusBarStyle: UIStatusBarStyle {
         return toCropViewController.preferredStatusBarStyle
     }
     
@@ -403,7 +427,7 @@ public class CropViewController: UIViewController, TOCropViewControllerDelegate 
         fatalError("init(coder:) has not been implemented")
     }
     
-    public override func viewWillAppear(_ animated: Bool) {
+    open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         // Defer adding the view until we're about to be presented
@@ -412,13 +436,13 @@ public class CropViewController: UIViewController, TOCropViewControllerDelegate 
         }
     }
     
-    public override func viewDidLayoutSubviews() {
+    open override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         toCropViewController.view.frame = view.bounds
         toCropViewController.viewDidLayoutSubviews()
     }
     
-    override public func preferredScreenEdgesDeferringSystemGestures() -> UIRectEdge {
+    override open func preferredScreenEdgesDeferringSystemGestures() -> UIRectEdge {
         if #available(iOS 11.0, *) {
             return toCropViewController.preferredScreenEdgesDeferringSystemGestures()
         }
@@ -540,25 +564,25 @@ extension CropViewController {
         }
         
         if delegate.responds(to: #selector(CropViewControllerDelegate.cropViewController(_:didCropImageToRect:angle:))) {
-            self.onDidCropImageToRect = {rect, angle in
+            self.onDidCropImageToRect = {[unowned self] rect, angle in
                 delegate.cropViewController!(self, didCropImageToRect: rect, angle: angle)
             }
         }
         
         if delegate.responds(to: #selector(CropViewControllerDelegate.cropViewController(_:didCropToImage:withRect:angle:))) {
-            self.onDidCropToRect = {image, rect, angle in
+            self.onDidCropToRect = {[unowned self] image, rect, angle in
                 delegate.cropViewController!(self, didCropToImage: image, withRect: rect, angle: angle)
             }
         }
         
         if delegate.responds(to: #selector(CropViewControllerDelegate.cropViewController(_:didCropToCircularImage:withRect:angle:))) {
-            self.onDidCropToCircleImage = {image, rect, angle in
+            self.onDidCropToCircleImage = {[unowned self] image, rect, angle in
                 delegate.cropViewController!(self, didCropToCircularImage: image, withRect: rect, angle: angle)
             }
         }
         
         if delegate.responds(to: #selector(CropViewControllerDelegate.cropViewController(_:didFinishCancelled:))) {
-            self.onDidFinishCancelled = { finished in
+            self.onDidFinishCancelled = {[unowned self] finished in
                 delegate.cropViewController!(self, didFinishCancelled: finished)
             }
         }

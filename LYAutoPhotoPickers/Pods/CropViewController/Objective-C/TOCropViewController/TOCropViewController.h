@@ -22,28 +22,9 @@
 
 #import <UIKit/UIKit.h>
 
+#import "TOCropViewConstants.h"
 #import "TOCropView.h"
 #import "TOCropToolbar.h"
-
-/* Preset values of the most common aspect ratios that can be used to quickly configure
-   the crop view controller. */
-typedef NS_ENUM(NSInteger, TOCropViewControllerAspectRatioPreset) {
-    TOCropViewControllerAspectRatioPresetOriginal,
-    TOCropViewControllerAspectRatioPresetSquare,
-    TOCropViewControllerAspectRatioPreset3x2,
-    TOCropViewControllerAspectRatioPreset5x3,
-    TOCropViewControllerAspectRatioPreset4x3,
-    TOCropViewControllerAspectRatioPreset5x4,
-    TOCropViewControllerAspectRatioPreset7x5,
-    TOCropViewControllerAspectRatioPreset16x9,
-    TOCropViewControllerAspectRatioPresetCustom
-};
-
-/* Whether the control toolbar is placed at the bottom or the top */
-typedef NS_ENUM(NSInteger, TOCropViewControllerToolbarPosition) {
-    TOCropViewControllerToolbarPositionBottom,
-    TOCropViewControllerToolbarPositionTop
-};
 
 @class TOCropViewController;
 
@@ -101,6 +82,11 @@ typedef NS_ENUM(NSInteger, TOCropViewControllerToolbarPosition) {
  The original, uncropped image that was passed to this controller.
  */
 @property (nonnull, nonatomic, readonly) UIImage *image;
+
+/**
+ The minimum croping aspect ratio. If set, user is prevented from setting cropping rectangle to lower aspect ratio than defined by the parameter.
+ */
+@property (nonatomic, assign) CGFloat minimumAspectRatio;
 
 /**
  The view controller's delegate that will receive the resulting
@@ -176,7 +162,7 @@ typedef NS_ENUM(NSInteger, TOCropViewControllerToolbarPosition) {
 @property (nullable, nonatomic, copy) NSString *cancelButtonTitle;
 
 /**
- If true, a custom aspect ratio is set, and the aspectRatioLockEnabled is set to YES, the crop box will swap it's dimensions depending on portrait or landscape sized images.
+ If true, a custom aspect ratio is set, and the aspectRatioLockEnabled is set to YES, the crop box will swap it's dimensions depending on portrait or landscape sized images.  This value also controls whether the dimensions can swap when the image is rotated.
  
  Default is NO.
  */
@@ -215,6 +201,11 @@ typedef NS_ENUM(NSInteger, TOCropViewControllerToolbarPosition) {
  Default is NO.
  */
 @property (nonatomic, assign) BOOL rotateClockwiseButtonHidden;
+
+/*
+ If this controller is embedded in UINavigationController its navigation bar is hidden by default. Set this property to false to show the navigation bar. This must be set before this controller is presented.
+ */
+@property (nonatomic, assign) BOOL hidesNavigationBar;
 
 /**
  When enabled, hides the rotation button, as well as the alternative rotation 

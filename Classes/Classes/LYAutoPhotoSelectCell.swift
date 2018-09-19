@@ -21,7 +21,7 @@ class LYAutoPhotoSelectCell: UICollectionViewCell {
     @IBOutlet weak var selectTagBg: UIView!
     
     public var currentIndex: Int!
-    public var delegate: LYAutoPhotoTapDelegate?
+    public weak var delegate: LYAutoPhotoTapDelegate?
 
     override func awakeFromNib() {
         super.awakeFromNib()

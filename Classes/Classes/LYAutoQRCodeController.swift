@@ -46,22 +46,17 @@ class LYAutoQRCodeController: UIViewController, AVCaptureMetadataOutputObjectsDe
     
     @objc fileprivate func scanImage(_ sender: UIBarButtonItem) {
         showPickers(type: .album, callback: { [weak self] photos in
-            let detector = CIDetector(ofType: CIDetectorTypeQRCode,
-                                      context: nil,
-                                      options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
             if let photo = photos?.first,
-                let ciimage = CIImage(image: photo.image) {
-                if let features = detector?.features(in: ciimage) {
-                    if features.count >= 1 {
-                        let feature = features.first! as! CIQRCodeFeature
-                        if let scannedResult = feature.messageString {
-                            self?.qrBlock(scannedResult)
-                        } else {
-                            self?.qrBlock(nil)
-                        }
-                    } else {
-                        self?.qrBlock(nil)
-                    }
+                let ciimage = photo.image.ciImage,
+                let detector = CIDetector(ofType: CIDetectorTypeQRCode,
+                                          context: nil,
+                                          options: [CIDetectorAccuracy: CIDetectorAccuracyHigh]) {
+                let features = detector.features(in: ciimage)
+                if let f = features.first,
+                    let feature = f as? CIQRCodeFeature {
+                    self?.qrBlock(feature.messageString)
+                } else {
+                    self?.qrBlock(nil)
                 }
             }
             
@@ -93,9 +88,9 @@ class LYAutoQRCodeController: UIViewController, AVCaptureMetadataOutputObjectsDe
         }
         
         output.metadataObjectTypes = [AVMetadataObject.ObjectType.qr,
-        AVMetadataObject.ObjectType.ean13,
-        AVMetadataObject.ObjectType.ean8,
-        AVMetadataObject.ObjectType.code128]
+                                      AVMetadataObject.ObjectType.ean13,
+                                      AVMetadataObject.ObjectType.ean8,
+                                      AVMetadataObject.ObjectType.code128]
     
         previewLayer = AVCaptureVideoPreviewLayer(session: session)
         previewLayer.frame = view.bounds
@@ -122,7 +117,7 @@ class LYAutoQRCodeController: UIViewController, AVCaptureMetadataOutputObjectsDe
             shapeLayer.frame = view.bounds
             shapeLayer.fillColor = UIColor.black.cgColor
             shapeLayer.opacity = 0.6
-            shapeLayer.fillRule = kCAFillRuleEvenOdd
+            shapeLayer.fillRule = CAShapeLayerFillRule.evenOdd
             view.layer.addSublayer(shapeLayer)
             
             output.rectOfInterest = previewLayer.metadataOutputRectConverted(fromLayerRect: scanView.frame)

@@ -21,6 +21,7 @@
 //  IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #import "TOCropViewController.h"
+
 #import "TOCropViewControllerTransitioning.h"
 #import "TOActivityCroppedImageProvider.h"
 #import "UIImage+CropRotate.h"
@@ -90,6 +91,7 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
         self.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
         self.modalPresentationStyle = UIModalPresentationFullScreen;
         self.automaticallyAdjustsScrollViewInsets = NO;
+        self.hidesNavigationBar = true;
         
         // Controller object that handles the transition animation when presenting / dismissing this app
         _transitionController = [[TOCropViewControllerTransitioning alloc] init];
@@ -149,12 +151,13 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
     // If this controller is pushed onto a navigation stack, set flags noting the
     // state of the navigation controller bars before we present, and then hide them
     if (self.navigationController) {
-        self.navigationBarHidden = self.navigationController.navigationBarHidden;
-        self.toolbarHidden = self.navigationController.toolbarHidden;
-        
-        [self.navigationController setNavigationBarHidden:YES animated:animated];
-        [self.navigationController setToolbarHidden:YES animated:animated];
-        
+        if (self.hidesNavigationBar) {
+            self.navigationBarHidden = self.navigationController.navigationBarHidden;
+            self.toolbarHidden = self.navigationController.toolbarHidden;
+            [self.navigationController setNavigationBarHidden:YES animated:animated];
+            [self.navigationController setToolbarHidden:YES animated:animated];
+        }
+
         self.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
     }
     else {
@@ -216,7 +219,7 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
     [UIView animateWithDuration:0.5f animations:^{ [self setNeedsStatusBarAppearanceUpdate]; }];
     
     // Restore the navigation controller to its state before we were presented
-    if (self.navigationController) {
+    if (self.navigationController && self.hidesNavigationBar) {
         [self.navigationController setNavigationBarHidden:self.navigationBarHidden animated:animated];
         [self.navigationController setToolbarHidden:self.toolbarHidden animated:animated];
     }
@@ -320,7 +323,7 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
         // Set Y and adjust for height
         if (self.toolbarPosition == TOCropViewControllerToolbarPositionBottom) {
             frame.size.height -= (insets.bottom + kTOCropViewControllerToolbarHeight);
-        } else {
+        } else if (self.toolbarPosition == TOCropViewControllerToolbarPositionTop) {
 			frame.origin.y = kTOCropViewControllerToolbarHeight + insets.top;
             frame.size.height -= frame.origin.y;
         }
@@ -455,6 +458,7 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
 //TODO: Deprecate iOS 7 properly at the right time
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
     self.toolbarSnapshotView = [self.toolbar snapshotViewAfterScreenUpdates:NO];
@@ -525,10 +529,14 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
 {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     
+    // If the size doesn't change (e.g, we did a 180 degree device rotation), don't bother doing a relayout
+    if (CGSizeEqualToSize(size, self.view.bounds.size)) { return; }
+    
     UIInterfaceOrientation orientation = UIInterfaceOrientationPortrait;
     CGSize currentSize = self.view.bounds.size;
-    if (currentSize.width < size.width)
+    if (currentSize.width < size.width) {
         orientation = UIInterfaceOrientationLandscapeLeft;
+    }
     
     [self willRotateToInterfaceOrientation:orientation duration:coordinator.transitionDuration];
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
@@ -563,21 +571,13 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
     //Depending on the shape of the image, work out if horizontal, or vertical options are required
     BOOL verticalCropBox = self.cropView.cropBoxAspectRatioIsPortrait;
     
-    // In CocoaPods, strings are stored in a separate bundle from the main one
-    NSBundle *resourceBundle = nil;
-    NSBundle *classBundle = [NSBundle bundleForClass:[self class]];
-    NSURL *resourceBundleURL = [classBundle URLForResource:@"TOCropViewControllerBundle" withExtension:@"bundle"];
-    if (resourceBundleURL) {
-        resourceBundle = [[NSBundle alloc] initWithURL:resourceBundleURL];
-    }
-    else {
-        resourceBundle = classBundle;
-    }
+    // Get the resource bundle depending on the framework/dependency manager we're using
+	NSBundle *resourceBundle = TO_CROP_VIEW_RESOURCE_BUNDLE_FOR_OBJECT(self);
     
     //Prepare the localized options
-    NSString *cancelButtonTitle = NSLocalizedStringFromTableInBundle(@"Cancel", @"TOCropViewControllerLocalizable", resourceBundle, nil);
-    NSString *originalButtonTitle = NSLocalizedStringFromTableInBundle(@"Original", @"TOCropViewControllerLocalizable", resourceBundle, nil);
-    NSString *squareButtonTitle = NSLocalizedStringFromTableInBundle(@"Square", @"TOCropViewControllerLocalizable", resourceBundle, nil);
+	NSString *cancelButtonTitle = NSLocalizedStringFromTableInBundle(@"Cancel", @"TOCropViewControllerLocalizable", resourceBundle, nil);
+	NSString *originalButtonTitle = NSLocalizedStringFromTableInBundle(@"Original", @"TOCropViewControllerLocalizable", resourceBundle, nil);
+	NSString *squareButtonTitle = NSLocalizedStringFromTableInBundle(@"Square", @"TOCropViewControllerLocalizable", resourceBundle, nil);
     
     //Prepare the list that will be fed to the alert view/controller
     NSMutableArray *items = [NSMutableArray array];
@@ -638,14 +638,13 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
     }
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_8_0
 - (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
     [self setAspectRatioPreset:(TOCropViewControllerAspectRatioPreset)buttonIndex animated:YES];
     self.aspectRatioLockEnabled = YES;
 }
-#pragma clang diagnostic pop
+#endif
 
 - (void)setAspectRatioPreset:(TOCropViewControllerAspectRatioPreset)aspectRatioPreset animated:(BOOL)animated
 {
@@ -1118,6 +1117,11 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
     }
 }
 
+- (void)setAspectRatioLockDimensionSwapEnabled:(BOOL)aspectRatioLockDimensionSwapEnabled
+{
+    self.cropView.aspectRatioLockDimensionSwapEnabled = aspectRatioLockDimensionSwapEnabled;
+}
+
 - (BOOL)aspectRatioLockEnabled
 {
     return self.cropView.aspectRatioLockEnabled;
@@ -1266,6 +1270,16 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
     }
 
     return insets;
+}
+
+- (void)setMinimumAspectRatio:(CGFloat)minimumAspectRatio
+{
+    self.cropView.minimumAspectRatio = minimumAspectRatio;
+}
+
+- (CGFloat)minimumAspectRatio
+{
+    return self.cropView.minimumAspectRatio;
 }
 
 @end

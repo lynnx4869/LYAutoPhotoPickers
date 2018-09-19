@@ -69,8 +69,8 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.register(UINib(nibName: "LYAutoPhotoSelectCell", bundle: Bundle(for: LYAutoPhotoPickers.self)), forCellWithReuseIdentifier: "LYAutoPhotoSelectCellId")
-        collectionView.register(LYAutoPhotoHeaderView.classForCoder(), forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: "LYAutoPhotoHeaderViewId")
-        collectionView.register(LYAutoPhotoFooterView.classForCoder(), forSupplementaryViewOfKind: UICollectionElementKindSectionFooter, withReuseIdentifier: "LYAutoPhotoFooterViewId")
+        collectionView.register(LYAutoPhotoHeaderView.classForCoder(), forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "LYAutoPhotoHeaderViewId")
+        collectionView.register(LYAutoPhotoFooterView.classForCoder(), forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: "LYAutoPhotoFooterViewId")
         
         collectionView.isHidden = true
         
@@ -185,9 +185,6 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
                 }
             }
             
-            if photo.image == nil {
-                photo.image = photo.asset.getOriginAssetImage()
-            }
             selectPhotos.append(photo)
         }
         
@@ -223,11 +220,6 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
         cell.currentIndex = indexPath.item
         
         let photo = photos[indexPath.item]
-        
-        if photo.tumImage == nil {
-            photo.tumImage = photo.asset.getTumAssetImage()
-        }
-        
         cell.tumImage.image = photo.tumImage
         
         if selectPhotos.contains(photo) {
@@ -283,13 +275,13 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         var supplementaryView: UICollectionReusableView!
         
-        if kind == UICollectionElementKindSectionHeader {
-            let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionElementKindSectionHeader, withReuseIdentifier: "LYAutoPhotoHeaderViewId", for: indexPath) as! LYAutoPhotoHeaderView
+        if kind == UICollectionView.elementKindSectionHeader {
+            let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "LYAutoPhotoHeaderViewId", for: indexPath) as! LYAutoPhotoHeaderView
             supplementaryView = headerView
         }
         
-        if kind == UICollectionElementKindSectionFooter {
-            let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionElementKindSectionFooter, withReuseIdentifier: "LYAutoPhotoFooterViewId", for: indexPath) as! LYAutoPhotoFooterView
+        if kind == UICollectionView.elementKindSectionFooter {
+            let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionFooter, withReuseIdentifier: "LYAutoPhotoFooterViewId", for: indexPath) as! LYAutoPhotoFooterView
             footerView.countLabel.text = "共\(photos.count)张照片"
             supplementaryView = footerView
         }
@@ -308,17 +300,11 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
     
     func photoBrowser(_ photoBrowser: PhotoBrowser, thumbnailImageForIndex index: Int) -> UIImage? {
         let photo = photos[index]
-        if photo.tumImage == nil {
-            photo.tumImage = photo.asset.getTumAssetImage()
-        }
         return photo.tumImage
     }
     
     func photoBrowser(_ photoBrowser: PhotoBrowser, localImageForIndex index: Int) -> UIImage? {
         let photo = photos[index]
-        if photo.image == nil {
-            photo.image = photo.asset.getOriginAssetImage()
-        }
         return photo.image
     }
     

@@ -95,7 +95,7 @@ fileprivate class LYAutoLoadingView: UIView {
         anim?.beginTime = CACurrentMediaTime()
         anim?.toValue = 2.0 * Double.pi
         anim?.duration = 3.0
-        anim?.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionLinear)
+        anim?.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.linear)
         anim?.completionBlock = {
             [weak self] (pop, fint) in
             if fint {

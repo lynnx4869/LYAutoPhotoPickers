@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="uPR-Gy-CKw" customClass="LYAutoCameraView" customModule="LYAutoPhotoPickers" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0xC-wj-i4p">
+                    <rect key="frame" x="335" y="15" width="30" height="30"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="30" id="8ta-Kn-R0c"/>
+                        <constraint firstAttribute="height" constant="30" id="OeO-jS-Xhe"/>
+                    </constraints>
+                    <state key="normal" image="ly_camera-front-on.png"/>
+                    <connections>
+                        <action selector="changeCamera:" destination="uPR-Gy-CKw" eventType="touchUpInside" id="VDe-Nw-pXT"/>
+                    </connections>
+                </button>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9xT-d8-E39">
+                    <rect key="frame" x="50" y="507" width="60" height="60"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="60" id="EGL-M9-4rc"/>
+                        <constraint firstAttribute="height" constant="60" id="QH1-dD-Z3E"/>
+                    </constraints>
+                    <inset key="imageEdgeInsets" minX="15" minY="15" maxX="15" maxY="15"/>
+                    <state key="normal" image="ly_arrow_back.png"/>
+                    <connections>
+                        <action selector="closeCamera:" destination="uPR-Gy-CKw" eventType="touchUpInside" id="5JW-zM-WQr"/>
+                    </connections>
+                </button>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="3dD-V1-9iq">
+                    <rect key="frame" x="147" y="497" width="80" height="80"/>
+                    <subviews>
+                        <visualEffectView opaque="NO" alpha="0.5" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PbQ-Sq-R8i">
+                            <rect key="frame" x="0.0" y="0.0" width="80" height="80"/>
+                            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="IAK-g2-89j">
+                                <rect key="frame" x="0.0" y="0.0" width="80" height="80"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            </view>
+                            <blurEffect style="light"/>
+                        </visualEffectView>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7g0-rH-o33">
+                            <rect key="frame" x="10" y="10" width="60" height="60"/>
+                            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                    <integer key="value" value="30"/>
+                                </userDefinedRuntimeAttribute>
+                            </userDefinedRuntimeAttributes>
+                            <connections>
+                                <action selector="takePhoto:" destination="uPR-Gy-CKw" eventType="touchUpInside" id="458-D9-s7P"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="trailing" secondItem="7g0-rH-o33" secondAttribute="trailing" constant="10" id="5aV-Gf-8sB"/>
+                        <constraint firstItem="PbQ-Sq-R8i" firstAttribute="top" secondItem="3dD-V1-9iq" secondAttribute="top" id="A5p-gO-wV6"/>
+                        <constraint firstAttribute="trailing" secondItem="PbQ-Sq-R8i" secondAttribute="trailing" id="Blv-b3-0gr"/>
+                        <constraint firstAttribute="width" constant="80" id="I34-Hy-J3E"/>
+                        <constraint firstAttribute="bottom" secondItem="PbQ-Sq-R8i" secondAttribute="bottom" id="RLw-dh-z5a"/>
+                        <constraint firstItem="7g0-rH-o33" firstAttribute="leading" secondItem="3dD-V1-9iq" secondAttribute="leading" constant="10" id="VLh-h3-Imo"/>
+                        <constraint firstItem="7g0-rH-o33" firstAttribute="top" secondItem="3dD-V1-9iq" secondAttribute="top" constant="10" id="YBT-RL-wZA"/>
+                        <constraint firstItem="PbQ-Sq-R8i" firstAttribute="leading" secondItem="3dD-V1-9iq" secondAttribute="leading" id="lfz-rJ-akP"/>
+                        <constraint firstAttribute="height" constant="80" id="nX1-2M-7CO"/>
+                        <constraint firstAttribute="bottom" secondItem="7g0-rH-o33" secondAttribute="bottom" constant="10" id="nmi-Zf-lk2"/>
+                    </constraints>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                            <integer key="value" value="40"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                    </userDefinedRuntimeAttributes>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="0xC-wj-i4p" firstAttribute="top" secondItem="uPR-Gy-CKw" secondAttribute="top" constant="15" id="9hA-pZ-mbM"/>
+                <constraint firstItem="3dD-V1-9iq" firstAttribute="centerX" secondItem="uPR-Gy-CKw" secondAttribute="centerX" id="JBf-0J-9Vi"/>
+                <constraint firstAttribute="bottom" secondItem="3dD-V1-9iq" secondAttribute="bottom" constant="90" id="cGR-GP-V5b"/>
+                <constraint firstItem="9xT-d8-E39" firstAttribute="leading" secondItem="uPR-Gy-CKw" secondAttribute="leading" constant="50" id="ns4-e3-Hgz"/>
+                <constraint firstItem="3dD-V1-9iq" firstAttribute="centerY" secondItem="9xT-d8-E39" secondAttribute="centerY" id="tZA-Hg-gnC"/>
+                <constraint firstAttribute="trailing" secondItem="0xC-wj-i4p" secondAttribute="trailing" constant="10" id="zXM-b9-blx"/>
+            </constraints>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="-399.5" y="-226.5"/>
+        </view>
+        <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Gmk-SZ-Aaa" customClass="LYAutoPhotoView" customModule="LYAutoPhotoPickers" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="QdI-gb-MMS">
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                </imageView>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SwR-ZM-6wy">
+                    <rect key="frame" x="40" y="547" width="70" height="70"/>
+                    <subviews>
+                        <visualEffectView opaque="NO" alpha="0.5" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bgc-Bn-UtB">
+                            <rect key="frame" x="0.0" y="0.0" width="70" height="70"/>
+                            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="n4n-5m-axX">
+                                <rect key="frame" x="0.0" y="0.0" width="70" height="70"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            </view>
+                            <blurEffect style="light"/>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                    <integer key="value" value="30"/>
+                                </userDefinedRuntimeAttribute>
+                            </userDefinedRuntimeAttributes>
+                        </visualEffectView>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zde-Mm-MFg">
+                            <rect key="frame" x="0.0" y="0.0" width="70" height="70"/>
+                            <inset key="imageEdgeInsets" minX="20" minY="25" maxX="20" maxY="25"/>
+                            <state key="normal" image="ly_back.png"/>
+                            <connections>
+                                <action selector="takePhotoAgain:" destination="Gmk-SZ-Aaa" eventType="touchUpInside" id="TGm-tp-QKE"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="trailing" secondItem="zde-Mm-MFg" secondAttribute="trailing" id="36G-L2-Wna"/>
+                        <constraint firstAttribute="trailing" secondItem="bgc-Bn-UtB" secondAttribute="trailing" id="FQJ-dh-P77"/>
+                        <constraint firstAttribute="bottom" secondItem="bgc-Bn-UtB" secondAttribute="bottom" id="JcR-Eh-fCA"/>
+                        <constraint firstItem="zde-Mm-MFg" firstAttribute="leading" secondItem="SwR-ZM-6wy" secondAttribute="leading" id="Wpk-uG-hhX"/>
+                        <constraint firstAttribute="width" constant="70" id="XuI-Iz-IBG"/>
+                        <constraint firstItem="bgc-Bn-UtB" firstAttribute="leading" secondItem="SwR-ZM-6wy" secondAttribute="leading" id="YRE-d4-aB8"/>
+                        <constraint firstItem="bgc-Bn-UtB" firstAttribute="top" secondItem="SwR-ZM-6wy" secondAttribute="top" id="cpg-kz-Ge9"/>
+                        <constraint firstItem="zde-Mm-MFg" firstAttribute="top" secondItem="SwR-ZM-6wy" secondAttribute="top" id="pdq-fO-NeJ"/>
+                        <constraint firstAttribute="bottom" secondItem="zde-Mm-MFg" secondAttribute="bottom" id="sBE-L4-xPM"/>
+                        <constraint firstAttribute="height" constant="70" id="xFA-C7-6u5"/>
+                    </constraints>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                            <integer key="value" value="35"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                    </userDefinedRuntimeAttributes>
+                </view>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LVg-Oc-n9K">
+                    <rect key="frame" x="265" y="547" width="70" height="70"/>
+                    <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="70" id="WdJ-1a-762"/>
+                        <constraint firstAttribute="height" constant="70" id="ie5-fQ-dWS"/>
+                    </constraints>
+                    <inset key="imageEdgeInsets" minX="20" minY="20" maxX="20" maxY="20"/>
+                    <state key="normal" image="ly_hook.png"/>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                            <integer key="value" value="35"/>
+                        </userDefinedRuntimeAttribute>
+                    </userDefinedRuntimeAttributes>
+                    <connections>
+                        <action selector="surePhoto:" destination="Gmk-SZ-Aaa" eventType="touchUpInside" id="gQi-q2-RqL"/>
+                    </connections>
+                </button>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xwg-5s-3zg">
+                    <rect key="frame" x="152.5" y="547" width="70" height="70"/>
+                    <subviews>
+                        <visualEffectView opaque="NO" alpha="0.5" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uXd-ae-6p4">
+                            <rect key="frame" x="0.0" y="0.0" width="70" height="70"/>
+                            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="bPv-Kc-uun">
+                                <rect key="frame" x="0.0" y="0.0" width="70" height="70"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            </view>
+                            <blurEffect style="light"/>
+                        </visualEffectView>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PXs-Pt-2oK">
+                            <rect key="frame" x="0.0" y="0.0" width="70" height="70"/>
+                            <inset key="imageEdgeInsets" minX="20" minY="20" maxX="20" maxY="20"/>
+                            <state key="normal" image="ly_cut.png"/>
+                            <connections>
+                                <action selector="cutPhoto:" destination="Gmk-SZ-Aaa" eventType="touchUpInside" id="ZZN-Ba-uPn"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstItem="PXs-Pt-2oK" firstAttribute="leading" secondItem="xwg-5s-3zg" secondAttribute="leading" id="Icb-yI-mw7"/>
+                        <constraint firstAttribute="trailing" secondItem="uXd-ae-6p4" secondAttribute="trailing" id="Jsn-KX-Ksc"/>
+                        <constraint firstItem="uXd-ae-6p4" firstAttribute="leading" secondItem="xwg-5s-3zg" secondAttribute="leading" id="QeO-dl-hcj"/>
+                        <constraint firstItem="uXd-ae-6p4" firstAttribute="top" secondItem="xwg-5s-3zg" secondAttribute="top" id="ae8-xd-aGj"/>
+                        <constraint firstAttribute="width" constant="70" id="hcY-RA-u8p"/>
+                        <constraint firstAttribute="height" constant="70" id="jJb-R8-Z3X"/>
+                        <constraint firstItem="PXs-Pt-2oK" firstAttribute="top" secondItem="xwg-5s-3zg" secondAttribute="top" id="pAM-3Z-IDc"/>
+                        <constraint firstAttribute="bottom" secondItem="PXs-Pt-2oK" secondAttribute="bottom" id="pwe-Xv-fth"/>
+                        <constraint firstAttribute="trailing" secondItem="PXs-Pt-2oK" secondAttribute="trailing" id="qcH-4v-cnk"/>
+                        <constraint firstAttribute="bottom" secondItem="uXd-ae-6p4" secondAttribute="bottom" id="xQE-E6-HxI"/>
+                    </constraints>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                            <integer key="value" value="35"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                    </userDefinedRuntimeAttributes>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="xwg-5s-3zg" secondAttribute="bottom" constant="50" id="18W-Df-jFh"/>
+                <constraint firstAttribute="bottom" secondItem="LVg-Oc-n9K" secondAttribute="bottom" constant="50" id="3Su-iN-rXw"/>
+                <constraint firstItem="xwg-5s-3zg" firstAttribute="centerX" secondItem="Gmk-SZ-Aaa" secondAttribute="centerX" id="5jC-tp-8fQ"/>
+                <constraint firstItem="QdI-gb-MMS" firstAttribute="leading" secondItem="Gmk-SZ-Aaa" secondAttribute="leading" id="DRM-G7-PTG"/>
+                <constraint firstAttribute="bottom" secondItem="QdI-gb-MMS" secondAttribute="bottom" id="PUp-Uq-hxx"/>
+                <constraint firstAttribute="trailing" secondItem="LVg-Oc-n9K" secondAttribute="trailing" constant="40" id="bbX-2W-cdF"/>
+                <constraint firstAttribute="trailing" secondItem="QdI-gb-MMS" secondAttribute="trailing" id="deB-Fn-VPC"/>
+                <constraint firstItem="SwR-ZM-6wy" firstAttribute="leading" secondItem="Gmk-SZ-Aaa" secondAttribute="leading" constant="40" id="kKp-hW-4kS"/>
+                <constraint firstItem="QdI-gb-MMS" firstAttribute="top" secondItem="Gmk-SZ-Aaa" secondAttribute="top" id="ouH-DF-13c"/>
+                <constraint firstAttribute="bottom" secondItem="SwR-ZM-6wy" secondAttribute="bottom" constant="50" id="wbR-BD-nsz"/>
+            </constraints>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <connections>
+                <outlet property="displayImage" destination="QdI-gb-MMS" id="i40-lE-89D"/>
+            </connections>
+            <point key="canvasLocation" x="192" y="-225"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="ly_arrow_back.png" width="100" height="100"/>
+        <image name="ly_back.png" width="125" height="100"/>
+        <image name="ly_camera-front-on.png" width="100" height="100"/>
+        <image name="ly_cut.png" width="100" height="100"/>
+        <image name="ly_hook.png" width="100" height="100"/>
+    </resources>
+</document>

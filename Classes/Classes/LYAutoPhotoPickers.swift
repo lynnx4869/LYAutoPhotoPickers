@@ -9,16 +9,52 @@
 import UIKit
 import Photos
 
+/// 相册枚举
+///
+/// - camera: 相机
+/// - album: 相册
+/// - qrcode: 二维码
 public enum LYAutoPhotoType {
+    /// 相机
     case camera
+    /// 相册
     case album
+    /// 二维码
     case qrcode
 }
 
 open class LYAutoPhoto: NSObject {
-    open var image: UIImage!
-    open var tumImage: UIImage!
+    
     open var asset: PHAsset!
+    
+    fileprivate var _image: UIImage!
+    open var image: UIImage! {
+        get {
+            if _image == nil, let a = asset {
+                _image = a.getOriginAssetImage()
+                clear()
+            }
+            return _image
+        }
+        set {
+            _image = newValue
+        }
+    }
+    
+    open lazy var tumImage: UIImage! = {
+        if let a = asset {
+            return a.getTumAssetImage()
+        }
+        return nil
+    }()
+    
+    fileprivate func clear() {
+        DispatchQueue.global().asyncAfter(deadline: .now()+5.0) {
+            [weak self] in            
+            self?._image = nil
+        }
+    }
+    
 }
 
 public typealias LYAutoCallback = ([LYAutoPhoto]?) -> Void
@@ -34,36 +70,42 @@ public extension UIViewController {
                             qr: @escaping LYAutoQRCallback = { _ in }) {
         let picker = LYAutoPhotoPickers()
         picker.checkPhotoAuth(type) { result in
-            if result {
-                switch type {
-                case .camera:
-                    let cuvc = LYAutoCameraController()
-                    cuvc.isRateTailor = isRateTailor
-                    cuvc.tailoringRate = tailoringRate
-                    cuvc.block = callback
-                    self.present(cuvc, animated: true, completion: nil)
-                case .album:
-                    let avc = LYAutoAlbumsController()
-                    avc.maxSelects = maxSelects
-                    avc.isRateTailor = isRateTailor
-                    avc.tailoringRate = tailoringRate
-                    avc.block = callback
-                    let nav = UINavigationController(rootViewController: avc)
-                    nav.navigationBar.isTranslucent = false
-                    self.present(nav, animated: true, completion: nil)
-                case .qrcode:
-                    let qc = LYAutoQRCodeController()
-                    qc.qrBlock = qr
-                    let nav = UINavigationController(rootViewController: qc)
-                    nav.navigationBar.tintColor = .white
-                    nav.navigationBar.barStyle = .black
-                    nav.navigationBar.setBackgroundImage(UIImage(), for: .any, barMetrics: .default)
-                    nav.navigationBar.shadowImage = UIImage()
-                    self.present(nav, animated: true, completion: nil)
+            DispatchQueue.main.async {
+                var vc: UIViewController!
+                
+                if result {
+                    switch type {
+                    case .camera:
+                        let cuvc = LYAutoCameraController()
+                        cuvc.isRateTailor = isRateTailor
+                        cuvc.tailoringRate = tailoringRate
+                        cuvc.block = callback
+                        vc = cuvc
+                    case .album:
+                        let avc = LYAutoAlbumsController()
+                        avc.maxSelects = maxSelects
+                        avc.isRateTailor = isRateTailor
+                        avc.tailoringRate = tailoringRate
+                        avc.block = callback
+                        let nav = UINavigationController(rootViewController: avc)
+                        nav.navigationBar.isTranslucent = false
+                        vc = nav
+                    case .qrcode:
+                        let qc = LYAutoQRCodeController()
+                        qc.qrBlock = qr
+                        let nav = UINavigationController(rootViewController: qc)
+                        nav.navigationBar.tintColor = .white
+                        nav.navigationBar.barStyle = .black
+                        nav.navigationBar.setBackgroundImage(UIImage(), for: .any, barMetrics: .default)
+                        nav.navigationBar.shadowImage = UIImage()
+                        vc = nav
+                    }
+                } else {
+                    let errorVc = picker.getErrorController(type)
+                    vc = errorVc
                 }
-            } else {
-                let errorVc = picker.getErrorController("camera")
-                self.present(errorVc, animated: true, completion: nil)
+                
+                self.present(vc, animated: true, completion: nil)
             }
         }
     }
@@ -80,7 +122,7 @@ open class LYAutoPhotoPickers {
             
             if authStatus == .notDetermined {
                 AVCaptureDevice.requestAccess(for: AVMediaType.video) { (granted) in
-                        authBlock(granted)
+                    authBlock(granted)
                 }
             } else if authStatus == .denied {
                 authBlock(false)
@@ -106,7 +148,7 @@ open class LYAutoPhotoPickers {
         }
     }
     
-    open func getErrorController(_ type: String) -> UIViewController {
+    open func getErrorController(_ type: LYAutoPhotoType) -> UIViewController {
         let aec = LYAutoAuthErrorController(nibName: "LYAutoAuthErrorController", bundle: Bundle(for: LYAutoPhotoPickers.self))
         aec.type = type
         

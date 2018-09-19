@@ -9,5 +9,5 @@ target 'LYAutoPhotoPickers' do
   pod 'LYAutoUtils'
   pod 'JXPhotoBrowser'
   pod 'CropViewController'
-
+  
 end

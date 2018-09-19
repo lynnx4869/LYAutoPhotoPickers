@@ -155,7 +155,7 @@ public extension UIImage {
             }
             UIGraphicsEndImageContext()
 
-            if let imageData = UIImageJPEGRepresentation(thumbImage, 1.0) {
+            if let imageData = thumbImage.jpegData(compressionQuality: 1.0) {
                 if CGFloat(imageData.count)/1024 < size {
                     return imageData
                 }
@@ -166,7 +166,7 @@ public extension UIImage {
             var min: CGFloat = 0.0
             for _ in 0..<6 {
                 let compressionQuality = (max + min) / 2
-                if let imageData = UIImageJPEGRepresentation(thumbImage, compressionQuality) {
+                if let imageData = thumbImage.jpegData(compressionQuality: compressionQuality) {
                     dataLen = imageData
                     if CGFloat(imageData.count)/1024 < size * 0.9 {
                         min = compressionQuality
