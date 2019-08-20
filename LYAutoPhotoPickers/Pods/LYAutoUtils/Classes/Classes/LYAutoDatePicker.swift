@@ -45,9 +45,9 @@ open class LYAutoDatePicker: UIViewController {
     open var color: UIColor?
     open var sureAction: ((Date)->Void)!
     
-    @IBOutlet weak fileprivate var cancelBtn: UIButton!
-    @IBOutlet weak fileprivate var sureBtn: UIButton!
-    @IBOutlet weak fileprivate var datepicker: UIDatePicker!
+    @IBOutlet weak private var cancelBtn: UIButton!
+    @IBOutlet weak private var sureBtn: UIButton!
+    @IBOutlet weak private var datepicker: UIDatePicker!
     
     override open func viewDidLoad() {
         super.viewDidLoad()
@@ -84,7 +84,7 @@ open class LYAutoDatePicker: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    fileprivate func setComponentsColor(color: UIColor) {
+    private func setComponentsColor(color: UIColor) {
         datepicker.tintColor = color
         cancelBtn.setTitleColor(color, for: .normal)
         cancelBtn.setTitleColor(color, for: .highlighted)
@@ -96,11 +96,11 @@ open class LYAutoDatePicker: UIViewController {
         time = sender.date
     }
     
-    @IBAction fileprivate func cancelAction(_ sender: UIButton) {
+    @IBAction private func cancelAction(_ sender: UIButton) {
         dismiss(animated: false, completion: nil)
     }
     
-    @IBAction fileprivate func sureAction(_ sender: UIButton) {
+    @IBAction private func sureAction(_ sender: UIButton) {
         sureAction(time!)
         dismiss(animated: false, completion: nil)
     }

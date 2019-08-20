@@ -45,18 +45,33 @@ class LYAutoPhotoFooterView: UICollectionReusableView {
     }
 }
 
-class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, PhotoBrowserDelegate, CropViewControllerDelegate, LYAutoPhotoTapDelegate {
+class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, CropViewControllerDelegate, LYAutoPhotoTapDelegate {
 
     var assetCollection: PHAssetCollection!
     
-    @IBOutlet fileprivate weak var collectionView: UICollectionView!
+    @IBOutlet private weak var collectionView: UICollectionView!
     
-    @IBOutlet fileprivate weak var cutBtn: UIButton!
-    @IBOutlet fileprivate weak var sureBtn: UIButton!
+    @IBOutlet private weak var cutBtn: UIButton!
+    @IBOutlet private weak var sureBtn: UIButton!
     
-    fileprivate var photos = [LYAutoPhoto]()
-    fileprivate var selectPhotos = [LYAutoPhoto]()
-        
+    private var photos = [LYAutoPhoto]()
+    private var selectPhotos = [LYAutoPhoto]()
+    
+    private lazy var dataSource: JXPhotoBrowserDataSource = {
+        return JXLocalDataSource(numberOfItems: { () -> Int in
+            return self.photos.count
+        }, localImage: { index -> UIImage? in
+            let photo = self.photos[index]
+            return photo.image
+        })
+    }()
+//    private lazy var delegate: JXPhotoBrowserDelegate = {
+//
+//    }()
+//    private lazy var photoBrowser: JXPhotoBrowser = {
+//
+//    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -115,7 +130,7 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
         debugPrint("photos view controller dealloc")
     }
     
-    @objc fileprivate func goBack() {
+    @objc private func goBack() {
         block(nil)
         navigationController?.dismiss(animated: true, completion: nil)
     }
@@ -147,7 +162,7 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
         let photo = photos[index]
         
         if selectPhotos.contains(photo) {
-            if let i = selectPhotos.index(of: photo) {
+            if let i = selectPhotos.firstIndex(of: photo) {
                 selectPhotos.remove(at: i)
             }
         } else {
@@ -223,7 +238,7 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
         cell.tumImage.image = photo.tumImage
         
         if selectPhotos.contains(photo) {
-            if let i = selectPhotos.index(of: photo) {
+            if let i = selectPhotos.firstIndex(of: photo) {
                 cell.selectTag.text = String(i+1)
             }
             cell.selectTag.backgroundColor = 0x1296db.color()
@@ -256,12 +271,8 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
             }
         }
         
-        let browser = PhotoBrowser()
-        browser.animationType = .scale
-        browser.photoBrowserDelegate = self
-        browser.plugins.append(NumberPageControlPlugin())
-        browser.originPageIndex = indexPath.item
-        browser.show()
+        let photoBrowser = JXPhotoBrowser(dataSource: dataSource, delegate: JXNumberPageControlDelegate())
+        photoBrowser.show(pageIndex: indexPath.item)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
@@ -287,25 +298,6 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
         }
         
         return supplementaryView
-    }
-    
-    //MARK: - PhotoBrowserDelegate
-    func numberOfPhotos(in photoBrowser: PhotoBrowser) -> Int {
-        return photos.count
-    }
-    
-    func photoBrowser(_ photoBrowser: PhotoBrowser, thumbnailViewForIndex index: Int) -> UIView? {
-        return collectionView.cellForItem(at: IndexPath(item: index, section: 0))
-    }
-    
-    func photoBrowser(_ photoBrowser: PhotoBrowser, thumbnailImageForIndex index: Int) -> UIImage? {
-        let photo = photos[index]
-        return photo.tumImage
-    }
-    
-    func photoBrowser(_ photoBrowser: PhotoBrowser, localImageForIndex index: Int) -> UIImage? {
-        let photo = photos[index]
-        return photo.image
     }
     
     //MARK: - CropViewControllerDelegate

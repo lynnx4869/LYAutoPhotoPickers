@@ -67,12 +67,6 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
 /* Flag to perform initial setup on the first run */
 @property (nonatomic, assign) BOOL firstTime;
 
-/* On iOS 7, the popover view controller that appears when tapping 'Done' */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-@property (nonatomic, strong) UIPopoverController *activityPopoverController;
-#pragma clang diagnostic pop
-
 @end
 
 @implementation TOCropViewController
@@ -367,9 +361,15 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
 {
     UIEdgeInsets insets = self.statusBarSafeInsets;
 
+    // If there is no title text, inset the top of the content as high as possible
     if (!self.titleLabel.text.length) {
         if (self.verticalLayout) {
+          if (self.toolbarPosition == TOCropViewControllerToolbarPositionTop) {
+            self.cropView.cropRegionInsets = UIEdgeInsetsMake(0.0f, 0.0f, insets.bottom, 0.0f);
+          }
+          else { // Add padding to the top otherwise
             self.cropView.cropRegionInsets = UIEdgeInsetsMake(insets.top, 0.0f, 0.0, 0.0f);
+          }
         }
         else {
             self.cropView.cropRegionInsets = UIEdgeInsetsMake(0.0f, 0.0f, insets.bottom, 0.0f);
@@ -455,11 +455,7 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
 
 #pragma mark - Rotation Handling -
 
-//TODO: Deprecate iOS 7 properly at the right time
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#pragma clang diagnostic ignored "-Wdeprecated-implementations"
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+- (void)_willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
     self.toolbarSnapshotView = [self.toolbar snapshotViewAfterScreenUpdates:NO];
     self.toolbarSnapshotView.frame = self.toolbar.frame;
@@ -491,7 +487,7 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
     self.cropView.internalLayoutDisabled = YES;
 }
 
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+- (void)_willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
     //Remove all animations in the toolbar
     self.toolbar.frame = [self frameForToolbarWithVerticalLayout:!UIInterfaceOrientationIsLandscape(toInterfaceOrientation)];
@@ -516,7 +512,7 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
     self.toolbar.alpha = 1.0f;
 }
 
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+- (void)_didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
     [self.toolbarSnapshotView removeFromSuperview];
     self.toolbarSnapshotView = nil;
@@ -538,14 +534,13 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
         orientation = UIInterfaceOrientationLandscapeLeft;
     }
     
-    [self willRotateToInterfaceOrientation:orientation duration:coordinator.transitionDuration];
+    [self _willRotateToInterfaceOrientation:orientation duration:coordinator.transitionDuration];
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        [self willAnimateRotationToInterfaceOrientation:orientation duration:coordinator.transitionDuration];
+        [self _willAnimateRotationToInterfaceOrientation:orientation duration:coordinator.transitionDuration];
     } completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        [self didRotateFromInterfaceOrientation:orientation];
+        [self _didRotateFromInterfaceOrientation:orientation];
     }];
 }
-#pragma clang diagnostic pop
 
 #pragma mark - Reset -
 - (void)resetCropViewLayout
@@ -580,71 +575,55 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
 	NSString *squareButtonTitle = NSLocalizedStringFromTableInBundle(@"Square", @"TOCropViewControllerLocalizable", resourceBundle, nil);
     
     //Prepare the list that will be fed to the alert view/controller
-    NSMutableArray *items = [NSMutableArray array];
-    [items addObject:originalButtonTitle];
-    [items addObject:squareButtonTitle];
-    if (verticalCropBox) {
-        [items addObjectsFromArray:@[@"2:3", @"3:5", @"3:4", @"4:5", @"5:7", @"9:16"]];
+    
+    // Ratio titles according to the order of enum TOCropViewControllerAspectRatioPreset
+    NSArray<NSString *> *portraitRatioTitles = @[originalButtonTitle, squareButtonTitle, @"2:3", @"3:5", @"3:4", @"4:5", @"5:7", @"9:16"];
+    NSArray<NSString *> *landscapeRatioTitles = @[originalButtonTitle, squareButtonTitle, @"3:2", @"5:3", @"4:3", @"5:4", @"7:5", @"16:9"];
+
+    NSMutableArray *ratioValues = [NSMutableArray array];
+    NSMutableArray *itemStrings = [NSMutableArray array];
+
+    if (self.allowedAspectRatios == nil) {
+        for (NSInteger i = 0; i < TOCropViewControllerAspectRatioPresetCustom; i++) {
+            NSString *itemTitle = verticalCropBox ? portraitRatioTitles[i] : landscapeRatioTitles[i];
+            [itemStrings addObject:itemTitle];
+            [ratioValues addObject:@(i)];
+        }
     }
     else {
-        [items addObjectsFromArray:@[@"3:2", @"5:3", @"4:3", @"5:4", @"7:5", @"16:9"]];
+        for (NSNumber *allowedRatio in self.allowedAspectRatios) {
+            TOCropViewControllerAspectRatioPreset ratio = allowedRatio.integerValue;
+            NSString *itemTitle = verticalCropBox ? portraitRatioTitles[ratio] : landscapeRatioTitles[ratio];
+            [itemStrings addObject:itemTitle];
+            [ratioValues addObject:allowedRatio];
+        }
     }
     
-    //Present via a UIAlertController if >= iOS 8
-    if (NSClassFromString(@"UIAlertController")) {
-        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
-        [alertController addAction:[UIAlertAction actionWithTitle:cancelButtonTitle style:UIAlertActionStyleCancel handler:nil]];
-        
-        //Add each item to the alert controller
-        NSInteger i = 0;
-        for (NSString *item in items) {
-            UIAlertAction *action = [UIAlertAction actionWithTitle:item style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-                [self setAspectRatioPreset:(TOCropViewControllerAspectRatioPreset)i animated:YES];
-                self.aspectRatioLockEnabled = YES;
-            }];
-            [alertController addAction:action];
-            
-            i++;
-        }
-        
-        alertController.modalPresentationStyle = UIModalPresentationPopover;
-        UIPopoverPresentationController *presentationController = [alertController popoverPresentationController];
-        presentationController.sourceView = self.toolbar;
-        presentationController.sourceRect = self.toolbar.clampButtonFrame;
-        [self presentViewController:alertController animated:YES completion:nil];
+    // If a custom aspect ratio is provided, and a custom name has been given to it, add it as a visible choice
+    if (self.customAspectRatioName.length > 0 && !CGSizeEqualToSize(CGSizeZero, self.customAspectRatio)) {
+        [itemStrings addObject:self.customAspectRatioName];
+        [ratioValues addObject:@(TOCropViewControllerAspectRatioPresetCustom)];
     }
-    else {
-        
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_8_0
-    //TODO: Completely overhaul this once iOS 7 support is dropped
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:nil
-                                                                 delegate:self
-                                                        cancelButtonTitle:cancelButtonTitle
-                                                   destructiveButtonTitle:nil
-                                                        otherButtonTitles:nil];
-        
-        for (NSString *item in items) {
-            [actionSheet addButtonWithTitle:item];
-        }
-        
-        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
-            [actionSheet showFromRect:self.toolbar.clampButtonFrame inView:self.toolbar animated:YES];
-        else
-            [actionSheet showInView:self.view];
-#pragma clang diagnostic pop
-#endif
-    }
-}
 
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_8_0
-- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
-{
-    [self setAspectRatioPreset:(TOCropViewControllerAspectRatioPreset)buttonIndex animated:YES];
-    self.aspectRatioLockEnabled = YES;
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    [alertController addAction:[UIAlertAction actionWithTitle:cancelButtonTitle style:UIAlertActionStyleCancel handler:nil]];
+
+    //Add each item to the alert controller
+    for (NSInteger i = 0; i < itemStrings.count; i++) {
+        id handlerBlock = ^(UIAlertAction *action) {
+            [self setAspectRatioPreset:[ratioValues[i] integerValue] animated:YES];
+            self.aspectRatioLockEnabled = YES;
+        };
+        UIAlertAction *action = [UIAlertAction actionWithTitle:itemStrings[i] style:UIAlertActionStyleDefault handler:handlerBlock];
+        [alertController addAction:action];
+    }
+
+    alertController.modalPresentationStyle = UIModalPresentationPopover;
+    UIPopoverPresentationController *presentationController = [alertController popoverPresentationController];
+    presentationController.sourceView = self.toolbar;
+    presentationController.sourceRect = self.toolbar.clampButtonFrame;
+    [self presentViewController:alertController animated:YES completion:nil];
 }
-#endif
 
 - (void)setAspectRatioPreset:(TOCropViewControllerAspectRatioPreset)aspectRatioPreset animated:(BOOL)animated
 {
@@ -729,7 +708,7 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
                                      completion:(void (^)(void))completion
 {
     [self presentAnimatedFromParentViewController:viewController fromImage:nil fromView:fromView fromFrame:fromFrame
-                                            angle:0 toImageFrame:CGRectZero setup:setup completion:nil];
+                                            angle:0 toImageFrame:CGRectZero setup:setup completion:completion];
 }
 
 - (void)presentAnimatedFromParentViewController:(UIViewController *)viewController
@@ -862,6 +841,36 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
 #pragma mark - Button Feedback -
 - (void)cancelButtonTapped
 {
+    if (!self.showCancelConfirmationDialog) {
+        [self dismissCropViewController];
+        return;
+    }
+
+    // Get the resource bundle depending on the framework/dependency manager we're using
+    NSBundle *resourceBundle = TO_CROP_VIEW_RESOURCE_BUNDLE_FOR_OBJECT(self);
+
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil
+                                                                             message:nil
+                                                                      preferredStyle:UIAlertControllerStyleActionSheet];
+    alertController.popoverPresentationController.sourceView = self.toolbar.visibleCancelButton;
+
+    NSString *yesButtonTitle = NSLocalizedStringFromTableInBundle(@"Delete Changes", @"TOCropViewControllerLocalizable", resourceBundle, nil);
+    NSString *noButtonTitle = NSLocalizedStringFromTableInBundle(@"Cancel", @"TOCropViewControllerLocalizable", resourceBundle, nil);
+
+    __weak typeof (self) weakSelf = self;
+    UIAlertAction *yesAction = [UIAlertAction actionWithTitle:yesButtonTitle style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+        [weakSelf dismissCropViewController];
+    }];
+    [alertController addAction:yesAction];
+
+    UIAlertAction *noAction = [UIAlertAction actionWithTitle:noButtonTitle style:UIAlertActionStyleCancel handler:nil];
+    [alertController addAction:noAction];
+
+    [weakSelf presentViewController:alertController animated:YES completion: nil];
+}
+
+- (void)dismissCropViewController
+{
     bool isDelegateOrCallbackHandled = NO;
 
     // Check if the delegate method was implemented and call if so
@@ -905,28 +914,14 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
         
         UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:self.applicationActivities];
         activityController.excludedActivityTypes = self.excludedActivityTypes;
-        
-        if (NSClassFromString(@"UIPopoverPresentationController")) {
-            activityController.modalPresentationStyle = UIModalPresentationPopover;
-            activityController.popoverPresentationController.sourceView = self.toolbar;
-            activityController.popoverPresentationController.sourceRect = self.toolbar.doneButtonFrame;
-            [self presentViewController:activityController animated:YES completion:nil];
-        }
-        else {
-            if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
-                [self presentViewController:activityController animated:YES completion:nil];
-            }
-            else {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-                [self.activityPopoverController dismissPopoverAnimated:NO];
-                self.activityPopoverController = [[UIPopoverController alloc] initWithContentViewController:activityController];
-                [self.activityPopoverController presentPopoverFromRect:self.toolbar.doneButtonFrame inView:self.toolbar permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-#pragma clang diagnostic pop
-            }
-        }
+
+        activityController.modalPresentationStyle = UIModalPresentationPopover;
+        activityController.popoverPresentationController.sourceView = self.toolbar;
+        activityController.popoverPresentationController.sourceRect = self.toolbar.doneButtonFrame;
+        [self presentViewController:activityController animated:YES completion:nil];
+
         __weak typeof(activityController) blockController = activityController;
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_8_0
+
         activityController.completionWithItemsHandler = ^(NSString *activityType, BOOL completed, NSArray *returnedItems, NSError *activityError) {
             if (!completed) {
                 return;
@@ -948,30 +943,6 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
                 blockController.completionWithItemsHandler = nil;
             }
         };
-#else
-        activityController.completionHandler = ^(NSString *activityType, BOOL completed) {
-            if (!completed) {
-                return;
-            }
-            
-            BOOL isCallbackOrDelegateHandled = NO;
-            
-            if (self.onDidFinishCancelled != nil) {
-                self.onDidFinishCancelled(NO);
-                isCallbackOrDelegateHandled = YES;
-            }
-
-            if ([self.delegate respondsToSelector:@selector(cropViewController:didFinishCancelled:)]) {
-                [self.delegate cropViewController:self didFinishCancelled:NO];
-                isCallbackOrDelegateHandled = YES;
-            }
-            
-            if (!isCallbackOrDelegateHandled) {
-                [self.presentingViewController dismissViewControllerAnimated:YES completion:nil];
-                blockController.completionHandler = nil;
-            }
-        };
-#endif
 
         return;
     }
@@ -1133,6 +1104,11 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
     self.toolbar.rotateClockwiseButtonHidden = rotateButtonsHidden;
 }
 
+- (void)setResetButtonHidden:(BOOL)resetButtonHidden
+{
+    self.toolbar.resetButtonHidden = resetButtonHidden;
+}
+
 - (BOOL)rotateButtonsHidden
 {
     return self.toolbar.rotateCounterclockwiseButtonHidden && self.toolbar.rotateClockwiseButtonHidden;
@@ -1261,7 +1237,7 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
 
         // Since iPhone X insets are always 44, check if this is merely
         // accounting for a non-X status bar and cancel it
-        if (insets.top <= 20.0f + FLT_EPSILON) {
+        if (insets.top <= 40.0f + FLT_EPSILON) {
             insets.top = self.statusBarHeight;
         }
     }

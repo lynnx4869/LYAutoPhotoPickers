@@ -37,7 +37,7 @@ class LYAutoPhotoSelectCell: UICollectionViewCell {
         selectTagBg.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(selectPhotoTag(_:))))
     }
     
-    @objc fileprivate func selectPhotoTag(_ tap: UITapGestureRecognizer) {
+    @objc private func selectPhotoTag(_ tap: UITapGestureRecognizer) {
         delegate?.tapPhoto(sender: tap.view, index: currentIndex)
     }
 

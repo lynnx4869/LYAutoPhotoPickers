@@ -41,8 +41,8 @@ open class LYAutoPop {
 
 fileprivate class LYAutoPopView: UIView {
     
-    fileprivate let leftIcon = UIImageView(frame: CGRect(x: 10, y: 8, width: 14, height: 14))
-    fileprivate let messageLabel = UILabel(frame: CGRect(x: 34, y: 0, width: LyConsts.ScreenWidth-44, height: 30))
+    private let leftIcon = UIImageView(frame: CGRect(x: 10, y: 8, width: 14, height: 14))
+    private let messageLabel = UILabel(frame: CGRect(x: 34, y: 0, width: LyConsts.ScreenWidth-44, height: 30))
     
     init(frame: CGRect, message: String, type: LYAutoPopType) {
         super.init(frame: frame)
@@ -63,7 +63,7 @@ fileprivate class LYAutoPopView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    fileprivate func setType(message: String, type: LYAutoPopType) {
+    private func setType(message: String, type: LYAutoPopType) {
         messageLabel.text = message
         
         if type == .success {
@@ -75,7 +75,7 @@ fileprivate class LYAutoPopView: UIView {
         }
     }
     
-    @objc fileprivate func removeSelf() {
+    @objc private func removeSelf() {
         removeFromSuperview()
     }
     

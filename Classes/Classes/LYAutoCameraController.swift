@@ -10,8 +10,8 @@ import UIKit
 
 class LYAutoCameraController: LYAutoPhotoBasicController {
     
-    fileprivate var cameraView: LYAutoCameraView!
-    fileprivate var photoView: LYAutoPhotoView!
+    private var cameraView: LYAutoCameraView!
+    private var photoView: LYAutoPhotoView!
     
     var image: UIImage? {
         didSet {

@@ -69,12 +69,12 @@ public class LYAutoSwitchs: UIView, UICollectionViewDelegate, UICollectionViewDa
         fatalError("init(coder:) has not been implemented")
     }
     
-    fileprivate var color: UIColor = 0x007cdc.color()
+    private var color: UIColor = 0x007cdc.color()
     
-    fileprivate var collectionView: UICollectionView!
-    fileprivate var selectLine: UIView!
+    private var collectionView: UICollectionView!
+    private var selectLine: UIView!
     
-    fileprivate func createViews() {
+    private func createViews() {
         let layout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 0
         layout.minimumInteritemSpacing = 0
@@ -158,8 +158,8 @@ fileprivate class LYAutoSwitchCell: UICollectionViewCell {
         }
     }
     
-    fileprivate var titleLabel: UILabel!
-    fileprivate var rightLine: CALayer!
+    private var titleLabel: UILabel!
+    private var rightLine: CALayer!
     
     override init(frame: CGRect) {
         super.init(frame: frame)

@@ -12,8 +12,8 @@ class LYAutoAuthErrorController: UIViewController {
     
     var type: LYAutoPhotoType = .camera
 
-    @IBOutlet fileprivate weak var messageLabel: UILabel!
-    @IBOutlet fileprivate weak var linkLabel: UILabel!
+    @IBOutlet private weak var messageLabel: UILabel!
+    @IBOutlet private weak var linkLabel: UILabel!
         
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -39,11 +39,11 @@ class LYAutoAuthErrorController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    @objc fileprivate func goback(_ sender: UIBarButtonItem) {
+    @objc private func goback(_ sender: UIBarButtonItem) {
         dismiss(animated: true, completion: nil)
     }
 
-    @IBAction fileprivate func settingAuth(_ sender: UIButton) {
+    @IBAction private func settingAuth(_ sender: UIButton) {
         if #available(iOS 10.0, *) {
             if let url = URL(string: UIApplication.openSettingsURLString) {
                 UIApplication.shared.open(url, options: [:], completionHandler: nil)

@@ -243,7 +243,7 @@
 				TargetAttributes = {
 					8B1F99261EF231B7004DA42A = {
 						CreatedOnToolsVersion = 8.3.2;
-						DevelopmentTeam = 28B5J4N7T8;
+						DevelopmentTeam = 7JTT9ASCMC;
 						LastSwiftMigration = 1000;
 						ProvisioningStyle = Manual;
 					};
@@ -251,7 +251,7 @@
 			};
 			buildConfigurationList = 8B1F99221EF231B7004DA42A /* Build configuration list for PBXProject "LYAutoPhotoPickers" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
@@ -325,7 +325,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-LYAutoPhotoPickers/Pods-LYAutoPhotoPickers-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-LYAutoPhotoPickers/Pods-LYAutoPhotoPickers-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/CropViewController/CropViewController.framework",
 				"${BUILT_PRODUCTS_DIR}/JXPhotoBrowser/JXPhotoBrowser.framework",
 				"${BUILT_PRODUCTS_DIR}/Kingfisher/Kingfisher.framework",
@@ -344,7 +344,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-LYAutoPhotoPickers/Pods-LYAutoPhotoPickers-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-LYAutoPhotoPickers/Pods-LYAutoPhotoPickers-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -509,15 +509,15 @@
 			baseConfigurationReference = 8FB9C1EE28964138CD78EF4C /* Pods-LYAutoPhotoPickers.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = 28B5J4N7T8;
+				DEVELOPMENT_TEAM = 7JTT9ASCMC;
 				INFOPLIST_FILE = LYAutoPhotoPickers/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.czcg.LYAutoPhotoPickers;
+				PRODUCT_BUNDLE_IDENTIFIER = com.corptrip.LYAutoPhotoPickers;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "e323d557-b6ba-4bd1-9e66-844716e9dd6e";
-				PROVISIONING_PROFILE_SPECIFIER = CaiTuoGeneralCertificate_Dev;
-				SWIFT_VERSION = 4.2;
+				PROVISIONING_PROFILE_SPECIFIER = iOS_Wildcard;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -526,15 +526,15 @@
 			baseConfigurationReference = 4E69B0E5BC8103B21DC820F6 /* Pods-LYAutoPhotoPickers.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = 28B5J4N7T8;
+				DEVELOPMENT_TEAM = 7JTT9ASCMC;
 				INFOPLIST_FILE = LYAutoPhotoPickers/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.czcg.LYAutoPhotoPickers;
+				PRODUCT_BUNDLE_IDENTIFIER = com.corptrip.LYAutoPhotoPickers;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "e323d557-b6ba-4bd1-9e66-844716e9dd6e";
-				PROVISIONING_PROFILE_SPECIFIER = CaiTuoGeneralCertificate_Dev;
-				SWIFT_VERSION = 4.2;
+				PROVISIONING_PROFILE_SPECIFIER = iOS_Wildcard;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};

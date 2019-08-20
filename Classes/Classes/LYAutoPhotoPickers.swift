@@ -27,7 +27,7 @@ open class LYAutoPhoto: NSObject {
     
     open var asset: PHAsset!
     
-    fileprivate var _image: UIImage!
+    private var _image: UIImage!
     open var image: UIImage! {
         get {
             if _image == nil, let a = asset {
@@ -48,7 +48,7 @@ open class LYAutoPhoto: NSObject {
         return nil
     }()
     
-    fileprivate func clear() {
+    private func clear() {
         DispatchQueue.global().asyncAfter(deadline: .now()+5.0) {
             [weak self] in            
             self?._image = nil
@@ -62,7 +62,7 @@ public typealias LYAutoQRCallback = (String?) -> Void
 
 public extension UIViewController {
     
-    public func showPickers(type: LYAutoPhotoType = .camera,
+    func showPickers(type: LYAutoPhotoType = .camera,
                             maxSelects: Int = 1,
                             isRateTailor: Bool = false,
                             tailoringRate: Double = 0.0,

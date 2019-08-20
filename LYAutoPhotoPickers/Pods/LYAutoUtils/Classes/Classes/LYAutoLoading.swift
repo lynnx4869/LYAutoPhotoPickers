@@ -16,8 +16,8 @@ public class LYAutoLoading {
     public var color: UIColor?
     public var centerImage: UIImage? = UIImage(named: "ly_loading", in: Bundle(for: LYAutoUtils.self), compatibleWith: nil)
     
-    fileprivate var isShow: Bool = false
-    fileprivate var autoLoadingView: LYAutoLoadingView?
+    private var isShow: Bool = false
+    private var autoLoadingView: LYAutoLoadingView?
     
     public func show() {
         if !isShow {
@@ -44,7 +44,7 @@ public class LYAutoLoading {
 
 fileprivate class LYAutoLoadingView: UIView {
     
-    fileprivate let logoImage = UIImageView(frame: CGRect(x: 0, y: 0, width: 45, height: 45))
+    private let logoImage = UIImageView(frame: CGRect(x: 0, y: 0, width: 45, height: 45))
     
     init(color: UIColor?, centerImage: UIImage?) {
         let oFrame = CGRect(x: 0, y: 0, width: LyConsts.ScreenWidth, height: LyConsts.ScreenHeight)
@@ -71,7 +71,7 @@ fileprivate class LYAutoLoadingView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    fileprivate func createLoading() {
+    private func createLoading() {
         let loadingBoard = UIView()
         loadingBoard.frame = CGRect(x: 0, y: 0, width: 140, height: 100)
         loadingBoard.center = center
@@ -90,7 +90,7 @@ fileprivate class LYAutoLoadingView: UIView {
         startLogoAnim()
     }
     
-    fileprivate func startLogoAnim() {
+    private func startLogoAnim() {
         let anim = POPBasicAnimation(propertyNamed: kPOPLayerRotation)
         anim?.beginTime = CACurrentMediaTime()
         anim?.toValue = 2.0 * Double.pi

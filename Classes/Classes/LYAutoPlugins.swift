@@ -11,18 +11,22 @@ import Photos
 import CoreMotion
 import CropViewController
 
-class LYAutoCameraView: UIView {
+class LYAutoCameraView: UIView, AVCapturePhotoCaptureDelegate {
     
     weak var cc: LYAutoCameraController!
     
-    fileprivate var device: AVCaptureDevice!
-    fileprivate var input: AVCaptureDeviceInput!
-    fileprivate var imageOutput = AVCaptureStillImageOutput()
-    fileprivate var session = AVCaptureSession()
-    fileprivate var previewLayer: AVCaptureVideoPreviewLayer!
+//    private var device: AVCaptureDevice!
+//    private var input: AVCaptureDeviceInput!
+    private lazy var session: AVCaptureSession = {
+        return AVCaptureSession()
+    }()
+    private lazy var imageOutput: AVCapturePhotoOutput = {
+        return AVCapturePhotoOutput()
+    }()
+//    private var previewLayer: AVCaptureVideoPreviewLayer!
     
-    fileprivate let manager = CMMotionManager()
-    fileprivate var orientation = UIDeviceOrientation.portrait
+    private let manager = CMMotionManager()
+    private var orientation = UIDeviceOrientation.portrait
     
     override func didMoveToSuperview() {
         cameraInit()
@@ -59,42 +63,28 @@ class LYAutoCameraView: UIView {
         debugPrint("LYAutoCameraView deinit ...")
     }
     
-    fileprivate func cameraInit() {
-        device = cameraOfPosition(position: .back)
-        do {
-            input = try AVCaptureDeviceInput(device: device)
-            session.sessionPreset = .hd1920x1080
-            if session.canAddInput(input) {
-                session.addInput(input)
+    private func cameraInit() {
+        if let device = cameraOfPosition(position: .back) {
+            do {
+                let input = try AVCaptureDeviceInput(device: device)
+                
+                session.sessionPreset = .hd1920x1080
+                if session.canAddInput(input) {
+                    session.addInput(input)
+                }
+                
+                if session.canAddOutput(imageOutput) {
+                    session.addOutput(imageOutput)
+                }
+            } catch {
+                debugPrint(error)
             }
-        } catch {
-            debugPrint(error)
         }
         
-        if session.canAddOutput(imageOutput) {
-            session.addOutput(imageOutput)
-        }
-        
-        previewLayer = AVCaptureVideoPreviewLayer(session: session)
+        let previewLayer = AVCaptureVideoPreviewLayer(session: session)
         previewLayer.videoGravity = .resizeAspectFill
         previewLayer.frame = bounds
         layer.insertSublayer(previewLayer, at: 0)
-                
-        do {
-            try device.lockForConfiguration()
-            
-            if device.isFlashModeSupported(.auto) {
-                device.flashMode = .auto
-            }
-            
-            if device.isWhiteBalanceModeSupported(.autoWhiteBalance) {
-                device.whiteBalanceMode = .autoWhiteBalance
-            }
-            
-            device.unlockForConfiguration()
-        } catch {
-            debugPrint(error)
-        }
         
         startSession()
     }
@@ -112,45 +102,32 @@ class LYAutoCameraView: UIView {
     }
     
     @IBAction func takePhoto(_ sender: UIButton) {
-        if let connect = imageOutput.connection(with: AVMediaType.video) {
-            imageOutput
-                .captureStillImageAsynchronously(from: connect,
-                                                 completionHandler:
-                    { [weak self] (buff, error) in
-                        if error == nil {
-                            if let imageDataSampleBuffer = buff,
-                                let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageDataSampleBuffer) {
-                                let image = UIImage(data: imageData, scale: 1.0)?
-                                    .fix((self?.orientation)!, (self?.input.device.position)!)?.fixOrientation()
-                                self?.cc.image = image
-                                self?.session.stopRunning()
-                            }
-                        } else {
-                            debugPrint("take photo error ...")
-                        }
-                })
-        } else {
-            debugPrint("take photo error ...")
+        let settings = AVCapturePhotoSettings()
+        if imageOutput.supportedFlashModes.contains(.auto) {
+            settings.flashMode = .auto
         }
+        imageOutput.capturePhoto(with: settings, delegate: self)
     }
     
     @IBAction func changeCamera(_ sender: UIButton) {
-        let cameraCount = AVCaptureDevice.devices(for: .video).count
-        if cameraCount > 1 {
-            var newDevice: AVCaptureDevice!
-            if input.device.position == .front {
-                newDevice = cameraOfPosition(position: .back)
-            } else {
-                newDevice = cameraOfPosition(position: .front)
-            }
-            
+        guard let input = session.inputs.first as? AVCaptureDeviceInput else {
+            return
+        }
+        
+        var position: AVCaptureDevice.Position = .back
+        if input.device.position == .back {
+            position = .front
+        } else {
+            position = .back
+        }
+        
+        if let newDevice = cameraOfPosition(position: position) {
             do {
                 let newInput = try AVCaptureDeviceInput(device: newDevice)
                 session.beginConfiguration()
                 session.removeInput(input)
                 if session.canAddInput(newInput) {
                     session.addInput(newInput)
-                    input = newInput
                 } else {
                     session.addInput(input)
                 }
@@ -161,12 +138,16 @@ class LYAutoCameraView: UIView {
         }
     }
     
-    fileprivate var initialPinchZoom: CGFloat = 0
-    @objc fileprivate func pinchPhoto(_ pinch: UIPinchGestureRecognizer) {
+    private var initialPinchZoom: CGFloat = 0
+    @objc private func pinchPhoto(_ pinch: UIPinchGestureRecognizer) {
+        guard let input = session.inputs.first as? AVCaptureDeviceInput else {
+            return
+        }
+        
         if pinch.state == .began {
             do {
-                try device.lockForConfiguration()
-                initialPinchZoom = device.videoZoomFactor
+                try input.device.lockForConfiguration()
+                initialPinchZoom = input.device.videoZoomFactor
             } catch {
                 debugPrint(error)
             }
@@ -176,22 +157,36 @@ class LYAutoCameraView: UIView {
             var zoomFactor: CGFloat = 0
             let scale = pinch.scale
             if scale < 1.0 {
-                zoomFactor = initialPinchZoom - pow(device.activeFormat.videoMaxZoomFactor, 1.0-scale)
+                zoomFactor = initialPinchZoom - pow(input.device.activeFormat.videoMaxZoomFactor, 1.0-scale)
             } else {
-                zoomFactor = initialPinchZoom + pow(device.activeFormat.videoMaxZoomFactor, (scale-1.0)/2.0)
+                zoomFactor = initialPinchZoom + pow(input.device.activeFormat.videoMaxZoomFactor, (scale-1.0)/2.0)
             }
             zoomFactor = min(10.0, zoomFactor)
             zoomFactor = max(1.0, zoomFactor)
-            device.videoZoomFactor = zoomFactor
+            input.device.videoZoomFactor = zoomFactor
         }
         
         if pinch.state == .ended || pinch.state == .cancelled {
-            device.unlockForConfiguration()
+            input.device.unlockForConfiguration()
         }
     }
     
-    fileprivate func cameraOfPosition(position: AVCaptureDevice.Position) -> AVCaptureDevice? {
-        let devices = AVCaptureDevice.devices(for: AVMediaType.video)
+    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photoSampleBuffer: CMSampleBuffer?, previewPhoto previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings: AVCaptureResolvedPhotoSettings, bracketSettings: AVCaptureBracketedStillImageSettings?, error: Error?) {
+        if let _ = error {
+            debugPrint("take photo error ...")
+        } else {
+            if let input = session.inputs.first as? AVCaptureDeviceInput,
+                let photoSampleBuffer = photoSampleBuffer,
+                let imageData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer, previewPhotoSampleBuffer: previewPhotoSampleBuffer) {
+                let image = UIImage(data: imageData, scale: 1.0)?.fix(orientation, input.device.position)?.fixOrientation()
+                self.cc.image = image
+                session.stopRunning()
+            }
+        }
+    }
+    
+    private func cameraOfPosition(position: AVCaptureDevice.Position) -> AVCaptureDevice? {
+        let devices = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: position).devices
         for device in devices {
             if device.position == position {
                 return device

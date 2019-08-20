@@ -19,10 +19,10 @@ class LYAutoAlbumModel {
 
 class LYAutoAlbumsController: LYAutoPhotoBasicController, UITableViewDelegate, UITableViewDataSource {
         
-    fileprivate var array = [LYAutoAlbumModel]()
-    fileprivate var tableView: UITableView!
+    private var array = [LYAutoAlbumModel]()
+    private var tableView: UITableView!
     
-    fileprivate var userLibrary: PHAssetCollection!
+    private var userLibrary: PHAssetCollection!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -97,7 +97,7 @@ class LYAutoAlbumsController: LYAutoPhotoBasicController, UITableViewDelegate, U
         debugPrint("albums view controller dealloc")
     }
     
-    @objc fileprivate func goBack(_ item: UIBarButtonItem) {
+    @objc private func goBack(_ item: UIBarButtonItem) {
         block(nil)
         navigationController?.dismiss(animated: true, completion: nil)
     }
@@ -137,7 +137,7 @@ class LYAutoAlbumsController: LYAutoPhotoBasicController, UITableViewDelegate, U
         gotoOneAlbum(assetCollection: assetCollection!, animated: true)
     }
     
-    fileprivate func gotoOneAlbum(assetCollection: PHAssetCollection, animated: Bool) {
+    private func gotoOneAlbum(assetCollection: PHAssetCollection, animated: Bool) {
         let pvc = LYAutoPhotosController(nibName: "LYAutoPhotosController", bundle: Bundle(for: LYAutoPhotoPickers.self))
         pvc.assetCollection = assetCollection
         pvc.maxSelects = maxSelects

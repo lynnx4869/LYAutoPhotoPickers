@@ -34,7 +34,7 @@ public extension Int {
     /// - Parameters:
     ///   - alpha: 透明度 0 ~ 1
     /// - Returns: UIColor
-    public func color(_ alpha: CGFloat) -> UIColor {
+    func color(_ alpha: CGFloat) -> UIColor {
         let color = UIColor(red: CGFloat(Double(((self & 0xFF0000) >> 16))/255.0),
                             green: CGFloat(Double(((self & 0x00FF00) >> 8))/255.0),
                             blue: CGFloat(Double((self & 0x0000FF))/255.0),
@@ -45,7 +45,7 @@ public extension Int {
     /// 从16进制获取UIColor alpha 默认为1
     ///
     /// - Returns: UIColor
-    public func color() -> UIColor {
+    func color() -> UIColor {
         return self.color(1.0)
     }
     
@@ -56,7 +56,7 @@ public extension UIColor {
     /// 获取纯色图片
     ///
     /// - Returns: 纯色图片
-    public func pureImage() -> UIImage? {
+    func pureImage() -> UIImage? {
         let imageSize = CGSize(width: 10, height: 10)
         
         UIGraphicsBeginImageContextWithOptions(imageSize, false, 0)
@@ -80,7 +80,7 @@ public extension UIImage {
     ///
     /// - Parameter color: UIColor
     /// - Returns: New Image
-    public func imageChange(color: UIColor) -> UIImage? {
+    func imageChange(color: UIColor) -> UIImage? {
         let imageReact = CGRect(origin: .zero, size: size)
         UIGraphicsBeginImageContextWithOptions(imageReact.size, false, scale)
         
@@ -103,7 +103,7 @@ public extension UIImage {
     /// 压缩图片
     ///
     /// - Returns: 输出图片
-    public func compress() -> Data? {
+    func compress() -> Data? {
         let fixelW = self.size.width
         let fixelH = self.size.height
         var thumbW = fixelW.truncatingRemainder(dividingBy: 2) == 1 ? fixelW + 1 : fixelW
@@ -187,7 +187,7 @@ public extension UIImage {
     /// 修复图片方向
     ///
     /// - Returns: 输出图片
-    public func fixOrientation() -> UIImage? {
+    func fixOrientation() -> UIImage? {
         if imageOrientation == .up {
             return self
         }
@@ -245,7 +245,7 @@ public extension UIImage {
     ///
     /// - Parameter url: 图片路径
     /// - Returns: Base64字符串
-    static public func image(url: String) -> String? {
+    static func image(url: String) -> String? {
         if let image = UIImage(contentsOfFile: url) {
             if let scaledImage = image.compress() {
                 return scaledImage.base64EncodedString(options: .endLineWithLineFeed)
@@ -268,7 +268,7 @@ public extension String {
     ///   - path: 解压到路径
     ///   - progress: 进行中
     ///   - finished: 已完成
-    public func unzip(_ path: String,
+    func unzip(_ path: String,
                       _ progress: LYUnzipProgress?,
                       _ finished: LYUnzipFinished?) {
         do {
@@ -303,7 +303,7 @@ public extension String {
     /// - Parameters:
     ///   - progress: 进行中
     ///   - finished: 已完成
-    public func unzipLocal(_ progress: LYUnzipProgress?,
+    func unzipLocal(_ progress: LYUnzipProgress?,
                            _ finished: LYUnzipFinished?) {
         var names = self.components(separatedBy: "/")
         names.removeLast()
@@ -321,14 +321,14 @@ public extension String {
     /// - Parameters:
     ///   - progress: 进行中
     ///   - finished: 已完成
-    public func unzipDelLocal(_ progress: LYUnzipProgress?,
+    func unzipDelLocal(_ progress: LYUnzipProgress?,
                               _ finished: LYUnzipFinished?) {
         self.unzipLocal(progress, finished)
         let _ = self.remove()
     }
     
     /// 移除文件
-    public func remove() -> Error? {
+    func remove() -> Error? {
         let fileManager = FileManager.default
         do {
             try fileManager.removeItem(atPath: self)
@@ -343,7 +343,7 @@ public extension String {
     /// 拷贝文件
     ///
     /// - Parameter path: 拷贝文件到路径
-    public func copy(toPath path: String) -> Error? {
+    func copy(toPath path: String) -> Error? {
         let fileManager = FileManager.default
         do {
             let names = self.components(separatedBy: "/")
@@ -359,7 +359,7 @@ public extension String {
     /// 文件是否存在
     ///
     /// - Returns: 是否
-    public func exists() -> Bool {
+    func exists() -> Bool {
         let fileManager = FileManager.default
         return fileManager.fileExists(atPath: self)
     }
@@ -369,7 +369,7 @@ public extension String {
 public extension WKWebView {
     
     /// 清空WebView
-    public func cleanForDealloc() {
+    func cleanForDealloc() {
         loadHTMLString("", baseURL: nil)
         stopLoading()
         navigationDelegate = nil

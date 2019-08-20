@@ -10,7 +10,7 @@ import UIKit
 
 class LYAutoQRScanView: UIView {
     
-    fileprivate var scanLine: UIView!
+    private var scanLine: UIView!
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -36,7 +36,7 @@ class LYAutoQRScanView: UIView {
         }
     }
     
-    fileprivate func initScanLine() {
+    private func initScanLine() {
         scanLine = UIView(frame: CGRect(x: 5, y: 5, width: bounds.width-10, height: 3))
         addSubview(scanLine)
 
@@ -71,7 +71,7 @@ class LYAutoQRScanView: UIView {
         scanLine.layer.mask = shapeLayer
     }
     
-    fileprivate func startScanAnim() {
+    private func startScanAnim() {
         UIView.animate(withDuration: 3.0,
                        animations: { [weak self] in
                         self?.scanLine.frame.origin = CGPoint(x: 5, y: (self?.bounds.height)!-8)

@@ -14,9 +14,9 @@ class LYAutoQRCodeController: UIViewController, AVCaptureMetadataOutputObjectsDe
     
     var qrBlock: LYAutoQRCallback = { _ in }
     
-    fileprivate var session: AVCaptureSession!
-    fileprivate var output: AVCaptureMetadataOutput!
-    fileprivate var previewLayer: AVCaptureVideoPreviewLayer!
+    private var session: AVCaptureSession!
+    private var output: AVCaptureMetadataOutput!
+    private var previewLayer: AVCaptureVideoPreviewLayer!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,11 +40,11 @@ class LYAutoQRCodeController: UIViewController, AVCaptureMetadataOutputObjectsDe
         debugPrint("QRCode Controller Deinit ...")
     }
     
-    @objc fileprivate func goBack(_ sender: UIBarButtonItem) {
+    @objc private func goBack(_ sender: UIBarButtonItem) {
         navigationController?.dismiss(animated: true, completion: nil)
     }
     
-    @objc fileprivate func scanImage(_ sender: UIBarButtonItem) {
+    @objc private func scanImage(_ sender: UIBarButtonItem) {
         showPickers(type: .album, callback: { [weak self] photos in
             if let photo = photos?.first,
                 let ciimage = photo.image.ciImage,
@@ -66,7 +66,7 @@ class LYAutoQRCodeController: UIViewController, AVCaptureMetadataOutputObjectsDe
         })
     }
     
-    fileprivate func scanQRCode() {
+    private func scanQRCode() {
         session = AVCaptureSession()
         session.sessionPreset = .hd1920x1080
 
@@ -100,7 +100,7 @@ class LYAutoQRCodeController: UIViewController, AVCaptureMetadataOutputObjectsDe
         session.startRunning()
     }
     
-    fileprivate func initViews() {
+    private func initViews() {
         if let scanView = Bundle(for: LYAutoPhotoPickers.self).loadNibNamed("LYAutoQRScanView", owner: nil, options: nil)?.first as? LYAutoQRScanView {
             let width = LyConsts.ScreenWidth * 0.7
             

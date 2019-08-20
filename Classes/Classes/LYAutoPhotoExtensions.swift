@@ -21,6 +21,9 @@ extension PHAsset {
             options.deliveryMode = .highQualityFormat
             options.resizeMode = .exact
             
+            let semaphore = DispatchSemaphore(value: 0)
+            
+            
             var image: UIImage?
             PHImageManager.default().requestImage(for: self,
                                                   targetSize: size,
@@ -28,8 +31,10 @@ extension PHAsset {
                                                   options: options)
             { (result, info) in
                 image = result
+                semaphore.signal()
             }
             
+            semaphore.wait()
             return image
         }
     }
@@ -68,6 +73,8 @@ extension UIImage {
                     return UIImage(cgImage: ci, scale: scale, orientation: .down)
                 case.landscapeRight:
                     return UIImage(cgImage: ci, scale: scale, orientation: .up)
+                @unknown default:
+                    return self
                 }
             } else {
                 switch orientation {
@@ -79,6 +86,8 @@ extension UIImage {
                     return UIImage(cgImage: ci, scale: scale, orientation: .up)
                 case.landscapeRight:
                     return UIImage(cgImage: ci, scale: scale, orientation: .down)
+                @unknown default:
+                    return self
                 }
             }
         }

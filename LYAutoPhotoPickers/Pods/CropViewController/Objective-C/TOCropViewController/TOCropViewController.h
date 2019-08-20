@@ -42,7 +42,9 @@
  @param cropRect A rectangle indicating the crop region of the image the user chose (In the original image's local co-ordinate space)
  @param angle The angle of the image when it was cropped
  */
-- (void)cropViewController:(nonnull TOCropViewController *)cropViewController didCropImageToRect:(CGRect)cropRect angle:(NSInteger)angle NS_SWIFT_NAME(cropViewController(_:didCropImageToRect:angle:));
+- (void)cropViewController:(nonnull TOCropViewController *)cropViewController
+        didCropImageToRect:(CGRect)cropRect
+                     angle:(NSInteger)angle;
 
 /**
  Called when the user has committed the crop action, and provides 
@@ -52,7 +54,9 @@
  @param cropRect A rectangle indicating the crop region of the image the user chose (In the original image's local co-ordinate space)
  @param angle The angle of the image when it was cropped
  */
-- (void)cropViewController:(nonnull TOCropViewController *)cropViewController didCropToImage:(nonnull UIImage *)image withRect:(CGRect)cropRect angle:(NSInteger)angle NS_SWIFT_NAME(cropViewController(_:didCropToImage:rect:angle:));
+- (void)cropViewController:(nonnull TOCropViewController *)cropViewController
+            didCropToImage:(nonnull UIImage *)image withRect:(CGRect)cropRect
+                     angle:(NSInteger)angle;
 
 /**
  If the cropping style is set to circular, implementing this delegate will return a circle-cropped version of the selected
@@ -62,7 +66,9 @@
  @param cropRect A rectangle indicating the crop region of the image the user chose (In the original image's local co-ordinate space)
  @param angle The angle of the image when it was cropped
  */
-- (void)cropViewController:(nonnull TOCropViewController *)cropViewController didCropToCircularImage:(nonnull UIImage *)image withRect:(CGRect)cropRect angle:(NSInteger)angle NS_SWIFT_NAME(cropViewController(_:didCropToCircleImage:rect:angle:));
+- (void)cropViewController:(nonnull TOCropViewController *)cropViewController
+    didCropToCircularImage:(nonnull UIImage *)image withRect:(CGRect)cropRect
+                     angle:(NSInteger)angle;
 
 /**
  If implemented, when the user hits cancel, or completes a 
@@ -72,7 +78,8 @@
  @param cancelled Whether a cropping action was actually performed, or if the user explicitly hit 'Cancel'
  
  */
-- (void)cropViewController:(nonnull TOCropViewController *)cropViewController didFinishCancelled:(BOOL)cancelled NS_SWIFT_NAME(cropViewController(_:didFinishCancelled:));
+- (void)cropViewController:(nonnull TOCropViewController *)cropViewController
+        didFinishCancelled:(BOOL)cancelled;
 
 @end
 
@@ -145,6 +152,12 @@
 @property (nonatomic, assign) CGSize customAspectRatio;
 
 /**
+ If this is set alongside `customAspectRatio`, the custom aspect ratio
+ will be shown as a selectable choice in the list of aspect ratios. (Default is `nil`)
+ */
+@property (nullable, nonatomic, copy) NSString *customAspectRatioName;
+
+/**
  Title label which can be used to show instruction on the top of the crop view controller
  */
 @property (nullable, nonatomic, readonly) UILabel *titleLabel;
@@ -162,7 +175,15 @@
 @property (nullable, nonatomic, copy) NSString *cancelButtonTitle;
 
 /**
- If true, a custom aspect ratio is set, and the aspectRatioLockEnabled is set to YES, the crop box will swap it's dimensions depending on portrait or landscape sized images.  This value also controls whether the dimensions can swap when the image is rotated.
+ Shows a confirmation dialog when the user hits 'Cancel' and there are pending changes.
+ (Default is NO)
+ */
+@property (nonatomic, assign) BOOL showCancelConfirmationDialog;
+
+/**
+ If true, a custom aspect ratio is set, and the aspectRatioLockEnabled is set to YES, the crop box
+ will swap it's dimensions depending on portrait or landscape sized images.
+ This value also controls whether the dimensions can swap when the image is rotated.
  
  Default is NO.
  */
@@ -216,6 +237,12 @@
 @property (nonatomic, assign) BOOL rotateButtonsHidden;
 
 /**
+ When enabled, hides the 'Reset' button on the toolbar.
+
+ Default is NO.
+ */
+@property (nonatomic, assign) BOOL resetButtonHidden;
+/**
  When enabled, hides the 'Aspect Ratio Picker' button on the toolbar.
  
  Default is NO.
@@ -242,6 +269,12 @@
  set activities that won't appear in the share sheet here.
  */
 @property (nullable, nonatomic, strong) NSArray<UIActivityType> *excludedActivityTypes;
+
+/**
+ An array of `TOCropViewControllerAspectRatioPreset` enum values denoting which
+ aspect ratios the crop view controller may display (Default is nil. All are shown)
+ */
+@property (nullable, nonatomic, strong) NSArray<NSNumber *> *allowedAspectRatios;
 
 /**
  When the user hits cancel, or completes a
