@@ -556,14 +556,15 @@ open class CropViewController: UIViewController, TOCropViewControllerDelegate {
 }
 
 extension CropViewController {
-    private func setUpCropController() {
+    fileprivate func setUpCropController() {
+        modalPresentationStyle = .fullScreen
         addChild(toCropViewController)
         transitioningDelegate = (toCropViewController as! UIViewControllerTransitioningDelegate)
         toCropViewController.delegate = self
         toCropViewController.didMove(toParent: self)
     }
     
-    private func setUpDelegateHandlers() {
+    fileprivate func setUpDelegateHandlers() {
         guard let delegate = self.delegate else {
             onDidCropToRect = nil
             onDidCropImageToRect = nil

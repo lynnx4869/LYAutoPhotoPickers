@@ -16,11 +16,11 @@ public enum LYAutoDatepickerType: Int {
 open class LYAutoDatePicker: UIViewController {
     
     public static func show(type: LYAutoDatepickerType,
-                          time: Date?,
-                          maxTime: Date?,
-                          minTime: Date?,
-                          color: UIColor?,
-                          sureAction: @escaping (Date)->Void) -> LYAutoDatePicker {
+                          time: Date? = nil,
+                          maxTime: Date? = nil,
+                          minTime: Date? = nil,
+                          color: UIColor? = nil,
+                          sureAction: @escaping (Date)->Void = { _ in }) -> LYAutoDatePicker {
         
         let datepicker = LYAutoDatePicker(nibName: "LYAutoDatePicker", bundle: Bundle(for: LYAutoUtils.self))
         

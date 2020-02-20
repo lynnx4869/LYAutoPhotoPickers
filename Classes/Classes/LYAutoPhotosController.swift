@@ -57,21 +57,6 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
     private var photos = [LYAutoPhoto]()
     private var selectPhotos = [LYAutoPhoto]()
     
-    private lazy var dataSource: JXPhotoBrowserDataSource = {
-        return JXLocalDataSource(numberOfItems: { () -> Int in
-            return self.photos.count
-        }, localImage: { index -> UIImage? in
-            let photo = self.photos[index]
-            return photo.image
-        })
-    }()
-//    private lazy var delegate: JXPhotoBrowserDelegate = {
-//
-//    }()
-//    private lazy var photoBrowser: JXPhotoBrowser = {
-//
-//    }()
-    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -170,15 +155,7 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
                 LYAutoAlert.show(title: "提示",
                                  subTitle: "最多只能选择\(String(maxSelects))张照片",
                                  check: false,
-                                 viewController: self,
-                                 confirm: nil,
-                                 cancel: nil,
-                                 sureAction: { (title) in
-                                    
-                }, cancelAction: { (title) in
-                    
-                })
-                
+                                 viewController: self)
                 return
             }
             
@@ -186,16 +163,8 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
                 if photo.asset.sourceType == .typeCloudShared {
                     LYAutoAlert.show(title: "提示",
                                      subTitle: "该图片储存于云端，请先前往相册同步到本地",
-                        check: false,
-                        viewController: self,
-                        confirm: nil,
-                        cancel: nil,
-                        sureAction: { (title) in
-                            
-                    }, cancelAction: { (title) in
-                        
-                    })
-                    
+                                     check: false,
+                                     viewController: self)
                     return
                 }
             }
@@ -258,21 +227,24 @@ class LYAutoPhotosController: LYAutoPhotoBasicController, UICollectionViewDelega
                 LYAutoAlert.show(title: "提示",
                                  subTitle: "该图片储存于云端，请先前往相册同步到本地",
                                  check: false,
-                                 viewController: self,
-                                 confirm: nil,
-                                 cancel: nil,
-                                 sureAction: { (title) in
-                                    
-                }, cancelAction: { (title) in
-                    
-                })
-                
+                                 viewController: self)
                 return
             }
         }
         
-        let photoBrowser = JXPhotoBrowser(dataSource: dataSource, delegate: JXNumberPageControlDelegate())
-        photoBrowser.show(pageIndex: indexPath.item)
+        let browser = JXPhotoBrowser()
+        browser.numberOfItems = {
+            self.photos.count
+        }
+        
+        browser.reloadCellAtIndex = { context in
+            let browserCell = context.cell as? JXPhotoBrowserImageCell
+            let photo = self.photos[context.index]
+            browserCell?.imageView.image = photo.image
+        }
+        
+        browser.pageIndex = indexPath.item
+        browser.show()
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
